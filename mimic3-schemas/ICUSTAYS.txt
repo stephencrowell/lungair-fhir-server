@@ -1,0 +1,12 @@
+row_id	int4	10						Unique row identifier.
+subject_id	int4	10					
+hadm_id	int4	10					
+icustay_id	int4	10				
+dbsource	varchar	20						Source database of the item.
+first_careunit	varchar	20						First careunit associated with the ICU stay.
+last_careunit	varchar	20						Last careunit associated with the ICU stay.
+first_wardid	int2	5						Identifier for the first ward the patient was located in.
+last_wardid	int2	5						Identifier for the last ward the patient is located in.
+intime	timestamp	22						Time of admission to the ICU.
+outtime	timestamp	22	 √ 		null			Time of discharge from the ICU.
+los	float8	17,17	 √ 		null			Length of stay in the ICU in fractional days.

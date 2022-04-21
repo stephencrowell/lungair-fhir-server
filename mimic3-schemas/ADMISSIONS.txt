@@ -1,0 +1,19 @@
+row_id	int4	10						Unique row identifier.
+subject_id	int4	10					
+hadm_id	int4	10				
+admittime	timestamp	22						Time of admission to the hospital.
+dischtime	timestamp	22						Time of discharge from the hospital.
+deathtime	timestamp	22	 √ 		null			Time of death.
+admission_type	varchar	50						Type of admission, for example emergency or elective.
+admission_location	varchar	50						Admission location.
+discharge_location	varchar	50						Discharge location
+insurance	varchar	255						Insurance type.
+language	varchar	10	 √ 		null			Language.
+religion	varchar	50	 √ 		null			Religon.
+marital_status	varchar	50	 √ 		null			Marital status.
+ethnicity	varchar	200						Ethnicity.
+edregtime	timestamp	22	 √ 		null			
+edouttime	timestamp	22	 √ 		null			
+diagnosis	varchar	255	 √ 		null			Diagnosis.
+hospital_expire_flag	int2	5	 √ 		null			
+has_chartevents_data	int2	5						Hospital admission has at least one observation in the CHARTEVENTS table.

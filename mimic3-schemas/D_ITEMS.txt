@@ -1,0 +1,10 @@
+row_id	int4	10						Unique row identifier.
+itemid	int4	10				
+label	varchar	200	 √ 		null			Label identifying the item.
+abbreviation	varchar	100	 √ 		null			Abbreviation associated with the item.
+dbsource	varchar	20	 √ 		null			Source database of the item.
+linksto	varchar	50	 √ 		null			Table which contains data for the given ITEMID.
+category	varchar	100	 √ 		null			Category of data which the concept falls under.
+unitname	varchar	100	 √ 		null			Unit associated with the item.
+param_type	varchar	30	 √ 		null			Type of item, for example solution or ingredient.
+conceptid	int4	10	 √ 		null			Identifier used to harmonize concepts identified by multiple ITEMIDs. CONCEPTIDs are planned but not yet implemented (all values are NULL).

@@ -1,0 +1,15 @@
+row_id	int4	10						Unique row identifier.
+subject_id	int4	10					
+hadm_id	int4	10	 √ 		null		
+icustay_id	int4	10	 √ 		null		
+itemid	int4	10	 √ 		null		
+charttime	timestamp	22	 √ 		null			Time when the event occured.
+storetime	timestamp	22	 √ 		null			Time when the event was recorded in the system.
+cgid	int4	10	 √ 		null		
+value	varchar	255	 √ 		null			Value of the event as a text string.
+valuenum	float8	17,17	 √ 		null			Value of the event as a number.
+valueuom	varchar	50	 √ 		null			Unit of measurement.
+warning	int4	10	 √ 		null			Flag to highlight that the value has triggered a warning.
+error	int4	10	 √ 		null			Flag to highlight an error with the event.
+resultstatus	varchar	50	 √ 		null			Result status of lab data.
+stopped	varchar	50	 √ 		null			Text string indicating the stopped status of an event (i.e. stopped, not stopped).

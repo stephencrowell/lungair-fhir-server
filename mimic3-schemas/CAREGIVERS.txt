@@ -1,0 +1,4 @@
+row_id	int4	10						Unique row identifier.
+cgid	int4	10				
+label	varchar	15	 √ 		null			Title of the caregiver, for example MD or RN.
+description	varchar	30	 √ 		null			More detailed description of the caregiver, if available.

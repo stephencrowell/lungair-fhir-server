@@ -1,0 +1,8 @@
+row_id	int4	10						Unique row identifier.
+subject_id	int4	10				
+gender	varchar	5						Gender.
+dob	timestamp	22						Date of birth.
+dod	timestamp	22	 √ 		null			Date of death. Null if the patient was alive at least 90 days post hospital discharge.
+dod_hosp	timestamp	22	 √ 		null			Date of death recorded in the hospital records.
+dod_ssn	timestamp	22	 √ 		null			Date of death recorded in the social security records.
+expire_flag	int4	10						Flag indicating that the patient has died.
