@@ -15,6 +15,7 @@ dtype_string_mapping = { # Map schema dtype string to pandas dtype
 }
 
 def get_dtype_dict(pasted_table_path):
+  """Given the path to a schema description text file, read out a dictionary that describes the schema."""
   dtype_dict = {}
   with open(pasted_table_path) as f:
     for line in f.readlines():
@@ -27,10 +28,12 @@ def get_dtype_dict(pasted_table_path):
 
 
 class Mimic3:
+  """This class handles loading the tables we want from the MIMIC-III dataset"""
 
   def __init__(self, mimic3_data_dir, mimic3_schemas_dir):
     """
-    
+    Given the path to the mimic3 dataset and the path to the schema text files,
+    load into memory the tables that we care about.
     """
     self.data_dir = mimic3_data_dir
     self.schemas_dir = mimic3_schemas_dir
@@ -61,7 +64,13 @@ class Mimic3:
 
   def read_table(self, table_name, index_col=None, chunksize=None):
     """
-    
+    Load a DataFrame using pandas read_csv.
+
+    Args:
+      table_name: The name of the csv file. The corresponding schema description text file is expected to have the same basename.
+      index_col: Name of the column to be used as an index for the DataFrame
+      chunksize: If set to not none, then this is the number of rows to read at a time.
+        When this options is used, a context manager TextFileReader is returned, rather than a DataFrame
     """
     dtype_dict = get_dtype_dict(os.path.join(self.schemas_dir,f'{table_name}.txt'))
     parse_int = [index_col] # if index col is int, definitely parse it that way b/c it should be NaN anyway
@@ -94,7 +103,7 @@ class Mimic3:
       parse_dates = date_cols
     )
   
-  # Pick out the item ID of each chart event that we support exporting to the fhir server
+  # The item ID of each chart event that we support exporting to the fhir server
   # These IDs were determined by exploring the D_ITEMS table; see https://mimic.mit.edu/docs/iii/tables/d_items/
   ITEM_IDS = {
     'fio2' : 3420,
