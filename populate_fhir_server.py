@@ -1,3 +1,4 @@
+import sys
 import names
 from fhirclient import client
 from fhirclient.models.patient import Patient
@@ -5,17 +6,22 @@ from fhirclient.models.observation import Observation
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
 from mimic3 import Mimic3
 
+fhir_server_url = f'http://localhost:4004/hapi-fhir-jpaserver/fhir' # TODO make this a command line arg
+mimic3_dir = "/home/ebrahim/data/mimic3/MIMIC-III-v1.4/" # TODO make this a command line arg
 
 smart = client.FHIRClient(settings={
   'app_id': 'my_web_app',
-  'api_base': f'http://localhost:4004/hapi-fhir-jpaserver/fhir' # TODO make this a command line arg
+  'api_base': fhir_server_url
 })
 
+# Make sure the server is there
+try:
+  smart.server.request_json('Patient')
+except BaseException as e:
+  print(f"Trouble reading from the given FHIR server-- does the server exist at {fhir_server_url} ?", file=sys.stderr)
+  raise
 
-mimic3_dir = "/home/ebrahim/data/mimic3/MIMIC-III-v1.4/" # TODO make this a command line arg
-mimic3_schemas_dir = './mimic3-schemas/'
-
-mimic3 = Mimic3(mimic3_dir, mimic3_schemas_dir)
+mimic3 = Mimic3(mimic3_dir, './mimic3-schemas/')
 
 # see https://www.hl7.org/fhir/valueset-administrative-gender.html
 FHIR_GENDER_MAPPING = {'M':'male', 'F':'female'}
@@ -107,7 +113,15 @@ for _,patient_row in mimic3.NICU_PATIENTS.iterrows():
   patient_chart_events =\
     mimic3.NICU_CHARTEVENTS_SUPPORTED[mimic3.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == patient_row.name]
   patient_resource = create_patient_from_row(patient_row)
-  response = patient_resource.create(smart.server)
+  try:
+    response = patient_resource.create(smart.server)
+  except BaseException as e:
+    # Make sure to print error message in the response if there is one
+    # (We caught BaseException because this could be a FHIRServer related exception or an HTTPError, but either way
+    # the FHIRServer adds the response as an attribute to the exception)
+    if hasattr(e, 'response') and hasattr(e.response, 'json') and callable(e.response.json):
+      print("Error uploading patient {patient_row.name} to server, response json:", e.response.json(), file=sys.stderr, sep='\n')
+    raise
   patient_id = response['id'] # get the patient id that was newly assigned by the fhir server
   observations = []
   for _,chart_event_row in patient_chart_events.iterrows():
@@ -125,9 +139,12 @@ for _,patient_row in mimic3.NICU_PATIENTS.iterrows():
 
   if len(observations)>0:
     transaction_bundle = create_transaction_bundle_object(observations)
-    transaction_response = post_transaction_bundle(smart.server, transaction_bundle)
-    assert(len(observations) == len(transaction_response['entry'])) # make sure there are as many responses as resources that went in
-
+    try:
+      transaction_response = post_transaction_bundle(smart.server, transaction_bundle)
+    except BaseException as e: # Again, make sure to print error message in the response if there is one
+      if hasattr(e, 'response') and hasattr(e.response, 'json') and callable(e.response.json):
+        print("Error uploading observation bundle to server, response json:", e.response.json(), file=sys.stderr, sep='\n')
+    assert(len(observations) == len(transaction_response['entry'])) # There should be as many responses as resources that went in
   num_patients_processed += 1
 
   # TODO: temporary measure for faster testing, remove this
