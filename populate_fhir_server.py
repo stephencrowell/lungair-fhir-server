@@ -8,7 +8,7 @@ from mimic3 import Mimic3
 
 smart = client.FHIRClient(settings={
   'app_id': 'my_web_app',
-  'api_base': f'http://localhost:4004/hapi-fhir-jpaserver/fhir'
+  'api_base': f'http://localhost:4004/hapi-fhir-jpaserver/fhir' # TODO make this a command line arg
 })
 
 

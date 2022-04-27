@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import sys
 
 dtype_string_mapping = { # Map schema dtype string to pandas dtype
   'int4' : "int32_possibly_nan",
@@ -19,7 +20,11 @@ def get_dtype_dict(pasted_table_path):
   dtype_dict = {}
   with open(pasted_table_path) as f:
     for line in f.readlines():
-      column_name, dtype_string = line.split()[:2]
+      try:
+        column_name, dtype_string = line.split()[:2]
+      except BaseException as e:
+        print(f"The schema description at {pasted_table_path} might not be formatted correctly.", file=sys.stderr)
+        raise
       if dtype_string not in dtype_string_mapping.keys():
         raise KeyError(f"Please add an entry for {dtype_string} to dtype_string_mapping")
       mapped_string = dtype_string_mapping[dtype_string]
@@ -35,6 +40,12 @@ class Mimic3:
     Given the path to the mimic3 dataset and the path to the schema text files,
     load into memory the tables that we care about.
     """
+
+    if not os.path.isdir(mimic3_data_dir):
+      raise FileNotFoundError(f"Please provide a valid directory for the MIMIC-III data directory; received: {mimic3_data_dir}")
+    if not os.path.isdir(mimic3_schemas_dir):
+      raise FileNotFoundError(f"Please provide a valid directory for the MIMIC-III schema descriptions; received: {mimic3_schemas_dir}")
+
     self.data_dir = mimic3_data_dir
     self.schemas_dir = mimic3_schemas_dir
     self.ICUSTAYS = self.read_table('ICUSTAYS', 'ICUSTAY_ID')
@@ -72,7 +83,12 @@ class Mimic3:
       chunksize: If set to not none, then this is the number of rows to read at a time.
         When this options is used, a context manager TextFileReader is returned, rather than a DataFrame
     """
-    dtype_dict = get_dtype_dict(os.path.join(self.schemas_dir,f'{table_name}.txt'))
+
+    schema_description_path = os.path.join(self.schemas_dir,f'{table_name}.txt')
+    if not os.path.isfile(schema_description_path):
+      raise FileNotFoundError(f"Could not find schema description text file for the {table_name} table at {schema_description_path}.")
+
+    dtype_dict = get_dtype_dict(schema_description_path)
     parse_int = [index_col] # if index col is int, definitely parse it that way b/c it should be NaN anyway
 
     # It makes sense to also parse all the ID columns as int,
