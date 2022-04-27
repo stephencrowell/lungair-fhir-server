@@ -42,7 +42,7 @@ class Mimic3:
     self.PATIENTS = self.read_table('PATIENTS', 'SUBJECT_ID')
     self.NICU_PATIENTS = self.PATIENTS.loc[self.NICUSTAYS.SUBJECT_ID.astype(int)]
     self.D_ITEMS = self.read_table('D_ITEMS', "ITEMID")
-    
+
     self.nicu_stay_ids = set(self.NICUSTAYS.index)
 
     with self.read_table("CHARTEVENTS", index_col="ROW_ID", chunksize=1e6) as reader:
@@ -102,7 +102,7 @@ class Mimic3:
       chunksize=chunksize,
       parse_dates = date_cols
     )
-  
+
   # The item ID of each chart event that we support exporting to the fhir server
   # These IDs were determined by exploring the D_ITEMS table; see https://mimic.mit.edu/docs/iii/tables/d_items/
   ITEM_IDS = {
