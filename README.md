@@ -1,6 +1,6 @@
-# make-fhir-server
+# lungair-fhir-server
 
-*Under development. Ignore please.*
+*Under development.*
 
 This repository will contain tools for building a prepopulated FHIR R4 server,
 intended for the construction of sandbox environments.
