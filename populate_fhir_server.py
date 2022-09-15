@@ -6,8 +6,13 @@ from fhirclient.models.observation import Observation
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
 from mimic3 import Mimic3
 
-fhir_server_url = f'http://localhost:4004/hapi-fhir-jpaserver/fhir' # TODO make this a command line arg
-mimic3_dir = "/home/ebrahim/data/mimic3/MIMIC-III-v1.4/" # TODO make this a command line arg
+if (len(sys.argv) < 3):
+    print("Too few arguements. Arguements should be server url and MIMIC3 directory")
+    exit()
+
+
+fhir_server_url = sys.argv[1] # TODO make this a command line arg
+mimic3_dir = sys.argv[2] # TODO make this a command line arg
 
 smart = client.FHIRClient(settings={
   'app_id': 'my_web_app',
@@ -146,6 +151,3 @@ for _,patient_row in mimic3.NICU_PATIENTS.iterrows():
         print("Error uploading observation bundle to server, response json:", e.response.json(), file=sys.stderr, sep='\n')
     assert(len(observations) == len(transaction_response['entry'])) # There should be as many responses as resources that went in
   num_patients_processed += 1
-
-  # TODO: temporary measure for faster testing, remove this
-  if num_patients_processed > 100: break
