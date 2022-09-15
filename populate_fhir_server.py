@@ -1,18 +1,22 @@
 import sys
 import names
+import argparse
 from fhirclient import client
 from fhirclient.models.patient import Patient
 from fhirclient.models.observation import Observation
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
 from mimic3 import Mimic3
 
-if (len(sys.argv) < 3):
-    print("Too few arguements. Arguements should be server url and MIMIC3 directory")
-    exit()
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--mimic3_dir', type=str, help='MIMIC3 data directory')
+parser.add_argument('--fhir_server', type=str, help='FHIR server')
+
+args = parser.parse_args()
 
 
-fhir_server_url = sys.argv[1] # TODO make this a command line arg
-mimic3_dir = sys.argv[2] # TODO make this a command line arg
+fhir_server_url = args.fhir_server
+mimic3_dir = args.mimic3_dir
 
 smart = client.FHIRClient(settings={
   'app_id': 'my_web_app',
