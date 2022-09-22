@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import names
+from fhirclient.models.patient import Patient
+from fhirclient.models.observation import Observation
+from abstract_lungair_data import AbstractLungairData
 
 dtype_string_mapping = { # Map schema dtype string to pandas dtype
   'int4' : "int32_possibly_nan",
@@ -14,6 +18,7 @@ dtype_string_mapping = { # Map schema dtype string to pandas dtype
   'timestamp' : np.datetime64, # pandas handles this differently-- we will deal with the exception below
   'float8' : np.double
 }
+
 
 def get_dtype_dict(pasted_table_path):
   """Given the path to a schema description text file, read out a dictionary that describes the schema."""
@@ -32,10 +37,49 @@ def get_dtype_dict(pasted_table_path):
   return dtype_dict
 
 
-class Mimic3:
+class Mimic3(AbstractLungairData):
   """This class handles loading the tables we want from the MIMIC-III dataset"""
 
-  def __init__(self, mimic3_data_dir, mimic3_schemas_dir):
+  def __init__(self):
+    # see http://hl7.org/fhir/R4/datatypes.html#dateTime
+    # and https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+    self.FHIR_DATETIME_FORMAT_STRING = '%Y-%m-%dT%H:%M:%S-05:00'
+
+    # see https://www.hl7.org/fhir/valueset-administrative-gender.html
+    self.FHIR_GENDER_MAPPING = {'M':'male', 'F':'female'}
+
+    # LOINC codes that I found by using loinc.org/search/ ... and making my best guesses when things were unclear
+    # Not to be fully trusted
+    self.LOINC_CODES = {
+      'fio2' : '19996-8',
+      'pip' : '60951-1',
+      'peep' : '20077-4',
+      'hr' : '8867-4',
+      'sao2' : '59408-5',
+    }
+
+    # The item ID of each chart event that we support exporting to the fhir server
+    # These IDs were determined by exploring the D_ITEMS table; see https://mimic.mit.edu/docs/iii/tables/d_items/
+    self.ITEM_IDS = {
+      'fio2' : 3420,
+      'pip' : 507,
+      'peep' : 505,
+      'hr' : 211,
+      'sao2' : 834,
+    }
+
+    # Map unit strings from the VALUEUOM column of CHARTEVETS to codes that follow the spec in
+    # https://ucum.org/ucum.html
+    self.UNIT_CODE = {
+      'bpm':'/min',
+      'cmH20':'cm[H2O]',
+      '%':'%',
+    }
+
+    # Inverse of the ITEM_IDS mapping
+    self.KEY_FROM_ITEM_ID = {v:k for k,v in self.ITEM_IDS.items()}
+
+  def initData(self, mimic3_data_dir, mimic3_schemas_dir):
     """
     Given the path to the mimic3 dataset and the path to the schema text files,
     load into memory the tables that we care about.
@@ -47,7 +91,7 @@ class Mimic3:
       raise FileNotFoundError(f"Please provide a valid directory for the MIMIC-III schema descriptions; received: {mimic3_schemas_dir}")
 
     self.data_dir = mimic3_data_dir
-    self.schemas_dir = mimic3_schemas_dir
+    self.schemas_dir = './mimic3-schemas/'
     self.ICUSTAYS = self.read_table('ICUSTAYS', 'ICUSTAY_ID')
     self.NICUSTAYS = self.ICUSTAYS[self.ICUSTAYS.FIRST_CAREUNIT == 'NICU']
     self.PATIENTS = self.read_table('PATIENTS', 'SUBJECT_ID')
@@ -118,16 +162,66 @@ class Mimic3:
       parse_dates = date_cols
     )
 
-  # The item ID of each chart event that we support exporting to the fhir server
-  # These IDs were determined by exploring the D_ITEMS table; see https://mimic.mit.edu/docs/iii/tables/d_items/
-  ITEM_IDS = {
-    'fio2' : 3420,
-    'pip' : 507,
-    'peep' : 505,
-    'hr' : 211,
-    'sao2' : 834,
-  }
+  def getAllPatients(self):
+    return (data for _,data in self.NICU_PATIENTS.iterrows())
 
-  # Inverse of the ITEM_IDS mapping
-  KEY_FROM_ITEM_ID = {v:k for k,v in ITEM_IDS.items()}
+  def getPatientChartEvent(self, patientName):
+    patient_chart_events =\
+      self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == patientName]
 
+    return (data for _,data in patient_chart_events.iterrows())
+
+
+  def generate_name(self, gender):
+    return names.get_last_name(), names.get_first_name('male' if gender=='M' else 'female')
+
+  def createPatient(self, patientInfo):
+    """Create a smart Patient object using a row from the MIMIC-III PATIENTS table.
+    They are assigned a randomly generated name, just for some flavor.
+    Their mimic subject ID is preserved as an 'identifier'."""
+    family, given = self.generate_name(patientInfo.GENDER)
+    return Patient({
+      'gender' : self.FHIR_GENDER_MAPPING[patientInfo.GENDER],
+      'identifier' : [
+        {
+          'system' : 'https://mimic.mit.edu/docs/iii/tables/patients/#subject_id',
+          'value' : str(patientInfo.name),
+        }
+      ],
+      'birthDate' : patientInfo.DOB.strftime('%Y-%m-%d'),
+      'name' : [{'family':family,'given':[given]}],
+    })
+
+  def createObservation(self, observationInfo, patient_id):
+    """Given a row from the MIMIC-III CHARTEVENTS table, see if the ITEMID is one
+    of the supported types and create an Observation from it."""
+    key = self.KEY_FROM_ITEM_ID[int(observationInfo.ITEMID)] # raises key error if the item id is not one we have supported
+    row_id = observationInfo.name
+    value = observationInfo.VALUENUM
+    unit_string = observationInfo.VALUEUOM
+    unit_code = self.UNIT_CODE[unit_string]
+    loinc = self.LOINC_CODES[key]
+    display_string = self.D_ITEMS.loc[self.ITEM_IDS[key]].LABEL
+    return Observation({
+      'code' : {
+        'coding' : [
+          {'code': loinc, 'display': display_string, 'system': 'http://loinc.org'}
+        ]
+      },
+      'status' :'final',
+      'subject': {'reference': f'Patient/{patient_id}'},
+      'valueQuantity': {
+        'code': unit_code,
+        'system': 'http://unitsofmeasure.org',
+        'unit': unit_string,
+        'value': value
+      },
+      'identifier' : [
+        {
+          'system' : 'ROW_ID in https://mimic.mit.edu/docs/iii/tables/chartevents/',
+          'value' : str(row_id),
+        }
+      ],
+      # assume everything is eastern time-- it's all shifted by a century anyway
+      'effectiveDateTime': observationInfo.CHARTTIME.strftime(self.FHIR_DATETIME_FORMAT_STRING),
+    })
