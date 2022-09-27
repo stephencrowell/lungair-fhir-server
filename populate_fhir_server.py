@@ -39,8 +39,8 @@ num_chartevents_processed = 0
 num_patients = len(mimic3.NICU_PATIENTS)
 num_patients_processed = 0
 
-for patient_row in mimic3.getAllPatients():
-  patient_resource = mimic3.createPatient(patient_row)
+for patient_row in mimic3.get_all_patients():
+  patient_resource = mimic3.create_patient(patient_row)
   try:
     response = patient_resource.create(smart.server)
   except BaseException as e:
@@ -52,8 +52,8 @@ for patient_row in mimic3.getAllPatients():
     raise
   patient_id = response['id'] # get the patient id that was newly assigned by the fhir server
   observations = []
-  for chart_event_row in mimic3.getPatientChartEvent(patient_row.name):
-    observation_resource = mimic3.createObservation(chart_event_row, patient_id)
+  for chart_event_row in mimic3.get_patient_chart_events(patient_row.name):
+    observation_resource = mimic3.create_observation(chart_event_row, patient_id)
     observations.append(observation_resource)
     num_chartevents_processed += 1
     if (num_chartevents_processed % 100 == 0):
