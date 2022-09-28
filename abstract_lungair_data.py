@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import names
+import warnings
 from fhirclient.models.patient import Patient
 from fhirclient.models.observation import Observation
 
@@ -48,27 +49,32 @@ class AbstractLungairData(ABC):
 		pass
 
 	@abstractmethod
-	def get_patient_chart_events(self, patientName):
+	def get_patient_chart_events(self, patient_id):
 		"""Returns a list of all Chart Events for one patient."""
 		pass
 
 	@abstractmethod
 	def get_patient_gender(self, patient_info):
+		"""Returns the patient's gender."""		
 		pass
 
 	@abstractmethod
 	def get_patient_system(self):
+		"""Returns the system where the patient information is stored."""		
 		pass
 
 	@abstractmethod
 	def get_patient_id(self, patient_info):
+		"""Returns the patient's id."""
 		pass
 
 	@abstractmethod
 	def get_patient_dob(self, patient_info):
+		"""Returns the patient's DOB."""
 		pass
 
 	def generate_name(self, gender):
+		"""Returns a first and last name based on gender."""
 	  return names.get_last_name(), names.get_first_name('male' if gender=='M' else 'female')
 
 	def create_patient(self, patient_info):
@@ -89,33 +95,41 @@ class AbstractLungairData(ABC):
 
 	@abstractmethod
 	def get_observation_item_id(self, observation_info):
+		"""Returns the observation id."""
 		pass
 
 	@abstractmethod
 	def get_observation_row_id(self, observation_info):
+		"""Returns the observation row id."""
 		pass
 
 	@abstractmethod
 	def get_observation_fio2(self, observation_info):
+		"""Returns the observation fio2 value."""
 		pass
 
 	@abstractmethod
 	def get_observation_pip(self, observation_info):
+		"""Returns the observation pip value."""
 		pass
 
 	@abstractmethod
 	def get_observation_peep(self, observation_info):
+		"""Returns the observation peep value."""
 		pass
 
 	@abstractmethod
 	def get_observation_hr(self, observation_info):
+		"""Returns the observation hr value."""
 		pass
 
 	@abstractmethod
 	def get_observation_sao2(self, observation_info):
+		"""Returns the observation sao2 value."""
 		pass
 
 	def get_observation_value(self, observation_info, key):
+		"""Returns the requested observation value. If the type is not implemented a warning will be raised."""
 		match key:
 			case 'fio2':
 				return self.get_observation_fio2(observation_info)
@@ -128,18 +142,22 @@ class AbstractLungairData(ABC):
 			case 'sao2':
 				return self.get_observation_sao2(observation_info)
 			case default:
+				warnings.warn('Type: ' + key + ' not implemented.')
 				return ''
 
 	@abstractmethod
 	def get_observation_unit_string(self, observation_info):
+		"""Returns the observation's value unit_string."""
 		pass
 
 	@abstractmethod
 	def get_observation_system(self):
+		"""Returns the system where the observation iformation is stored."""
 		pass
 
 	@abstractmethod
 	def get_observation_time(self, observation_info):
+		"""Returns the time observation was recorded."""
 		pass
 
 	def create_observation(self, observation_info, patient_id):

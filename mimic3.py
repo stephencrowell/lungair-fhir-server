@@ -123,7 +123,7 @@ class Mimic3(AbstractLungairData):
   def get_all_patients(self):
     return (data for _,data in self.NICU_PATIENTS.iterrows())
 
-  def get_patient_chart_events(self, patientName):
+  def get_patient_chart_events(self, patient_id):
     patient_chart_events =\
       self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == patientName]
 
