@@ -75,7 +75,7 @@ class AbstractLungairData(ABC):
 
 	def generate_name(self, gender):
 		"""Returns a first and last name based on gender."""
-	  return names.get_last_name(), names.get_first_name('male' if gender=='M' else 'female')
+		return names.get_last_name(), names.get_first_name('male' if gender=='M' else 'female')
 
 	def create_patient(self, patient_info):
 		"""Create a smart Patient object."""
@@ -190,5 +190,5 @@ class AbstractLungairData(ABC):
 		    }
 		  ],
 		  # assume everything is eastern time-- it's all shifted by a century anyway
-		  'effectiveDateTime': self.get_observation_time(observation_info).strftime(self.FHIR_DATETIME_FORMAT_STRING),
+		  'effectiveDateTime': self.get_observation_time(observation_info).strftime(FHIR_DATETIME_FORMAT_STRING),
 		})

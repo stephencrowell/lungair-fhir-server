@@ -5,7 +5,7 @@ from fhirclient.models.patient import Patient
 from fhirclient.models.observation import Observation
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
 from mimic3 import Mimic3
-from RandomData import RandomData
+from RandomData import random_data
 
 parser = argparse.ArgumentParser()
 
