@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import os
 import sys
-from abstract_lungair_data import AbstractLungairData
+from datetime import datetime
+from patient_data_source import PatientDataSource, Patient, Observation
 
 dtype_string_mapping = { # Map schema dtype string to pandas dtype
   'int4' : "int32_possibly_nan",
@@ -33,11 +34,63 @@ def get_dtype_dict(pasted_table_path):
       dtype_dict[column_name.upper()] = mapped_string
   return dtype_dict
 
+class Mimic3Patient(Patient):
 
-class Mimic3(AbstractLungairData):
+  # see https://www.hl7.org/fhir/valueset-administrative-gender.html
+  FHIR_GENDER_MAPPING = {'M':'male', 'F':'female'} 
+
+  def __init__(self, patient_info):
+    self.patient_info = patient_info
+
+  def get_gender(self) -> str:  
+    return self.FHIR_GENDER_MAPPING[self.patient_info.GENDER]
+
+  def get_id(self) -> str:
+    return str(self.patient_info.name)
+
+  def get_dob(self) -> datetime:
+    return pd.Timestamp(self.patient_info.DOB)
+
+
+class Mimic3Observation(Observation):
+
+  def __init__(self, observation_info):
+    self.observation_info = observation_info
+
+  def get_id(self) -> str:
+    return str(self.observation_info.name)
+
+  def get_unit_string(self) -> str:
+    return self.observation_info.VALUEUOM
+
+  def get_observation_type(self) -> Observation.ObservationType:
+    return Observation.ObservationType[Mimic3.KEY_FROM_ITEM_ID[int(self.observation_info.ITEMID)]]
+
+  def get_value(self) -> str:
+    return self.observation_info.VALUENUM
+
+  def get_time(self) -> datetime:
+    return pd.Timestamp(self.observation_info.CHARTTIME)
+
+
+
+class Mimic3(PatientDataSource):
   """This class handles loading the tables we want from the MIMIC-III dataset"""
 
-  def initData(self, mimic3_data_dir, mimic3_schemas_dir):
+  # The item ID of each chart event that we support exporting to the fhir server
+  # These IDs were determined by exploring the D_ITEMS table; see https://mimic.mit.edu/docs/iii/tables/d_items/
+  ITEM_IDS = {
+    'fio2' : 3420,
+    'pip' : 507,
+    'peep' : 505,
+    'hr' : 211,
+    'sao2' : 834,
+  }
+
+  # Inverse of the ITEM_IDS mapping
+  KEY_FROM_ITEM_ID = {v:k for k,v in ITEM_IDS.items()}
+
+  def __init__(self, mimic3_data_dir, mimic3_schemas_dir):
     """
     Given the path to the mimic3 dataset and the path to the schema text files,
     load into memory the tables that we care about.
@@ -121,52 +174,16 @@ class Mimic3(AbstractLungairData):
     )
 
   def get_all_patients(self):
-    return (data for _,data in self.NICU_PATIENTS.iterrows())
+    return (Mimic3Patient(data) for _,data in self.NICU_PATIENTS.iterrows())
 
-  def get_patient_chart_events(self, patient_id):
+  def get_patient_observations(self, patient : Patient):
     patient_chart_events =\
-      self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == patientName]
+      self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == int(patient.get_id())]
 
-    return (data for _,data in patient_chart_events.iterrows())
-
-  def get_patient_gender(self, patient_info):
-    return patient_info.GENDER
+    return (Mimic3Observation(data) for _,data in patient_chart_events.iterrows())
 
   def get_patient_system(self):
     return 'https://mimic.mit.edu/docs/iii/tables/patients/#subject_id'
 
-  def get_patient_id(self, patient_info):
-    return patient_info.name
-
-  def get_patient_dob(self, patient_info):
-    return patient_info.DOB
-
-  def get_observation_item_id(self, observation_info):
-    return observation_info.ITEMID
-
-  def get_observation_row_id(self, observation_info):
-    return observation_info.name
-
-  def get_observation_fio2(self, observation_info):
-    return observation_info.VALUENUM
-
-  def get_observation_pip(self, observation_info):
-    return observation_info.VALUENUM
-
-  def get_observation_peep(self, observation_info):
-    return observation_info.VALUENUM
-
-  def get_observation_hr(self, observation_info):
-    return observation_info.VALUENUM
-
-  def get_observation_sao2(self, observation_info):
-    return observation_info.VALUENUM
-
-  def get_observation_unit_string(self, observation_info):
-    return observation_info.VALUEUOM
-
   def get_observation_system(self):
     return 'ROW_ID in https://mimic.mit.edu/docs/iii/tables/chartevents/'
-
-  def get_observation_time(self, observation_info):
-    return observation_info.CHARTTIME
