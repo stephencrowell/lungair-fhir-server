@@ -7,7 +7,6 @@ from collections.abc import Iterable
 from fhirclient.models.patient import Patient as FHIR_Patient
 from fhirclient.models.observation import Observation as FHIR_Observation
 from fhirclient.models.fhirdate import FHIRDate
-from dateutil import parser
 
 class Patient(ABC):
 	class Gender(Enum):

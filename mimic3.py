@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import sys
 from datetime import datetime
+from collections.abc import Iterable
 from patient_data_source import PatientDataSource, Patient, Observation
 
 dtype_string_mapping = { # Map schema dtype string to pandas dtype
@@ -167,8 +168,8 @@ class Mimic3(PatientDataSource):
         dtype_dict[colname] = np.int32 if colname in parse_int else float
 
     table_path = os.path.join(self.data_dir,f'{table_name}.csv.gz')
-    if table_name == 'CHARTEVENTS':
-      table_path = './CHARTEVENTS_test.csv'
+    # if table_name == 'CHARTEVENTS':
+    #   table_path = './CHARTEVENTS_test.csv'
     # print(dtype_dict)
 
     return pd.read_csv(
@@ -179,10 +180,10 @@ class Mimic3(PatientDataSource):
       parse_dates = date_cols
     )
 
-  def get_all_patients(self):
+  def get_all_patients(self) -> Iterable[Patient]:
     return (Mimic3Patient(data) for _,data in self.NICU_PATIENTS.iterrows())
 
-  def get_patient_observations(self, patient : Patient):
+  def get_patient_observations(self, patient : Patient) -> Iterable[Observation]:
     patient_chart_events =\
       self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == int(patient.get_identifier_value())]
 
