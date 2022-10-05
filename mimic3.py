@@ -42,14 +42,17 @@ class Mimic3Patient(Patient):
   def __init__(self, patient_info):
     self.patient_info = patient_info
 
-  def get_gender(self) -> str:  
-    return self.FHIR_GENDER_MAPPING[self.patient_info.GENDER]
+  def get_gender(self) -> Patient.Gender:  
+    return Patient.Gender[self.FHIR_GENDER_MAPPING[self.patient_info.GENDER]]
 
-  def get_id(self) -> str:
+  def get_identifier_value(self) -> str:
     return str(self.patient_info.name)
 
+  def get_identifier_system(self) -> str:
+    return 'https://mimic.mit.edu/docs/iii/tables/patients/#subject_id'
+
   def get_dob(self) -> datetime:
-    return pd.Timestamp(self.patient_info.DOB)
+    return pd.Timestamp(self.patient_info.DOB).to_pydatetime()
 
 
 class Mimic3Observation(Observation):
@@ -57,8 +60,11 @@ class Mimic3Observation(Observation):
   def __init__(self, observation_info):
     self.observation_info = observation_info
 
-  def get_id(self) -> str:
+  def get_identifier_value(self) -> str:
     return str(self.observation_info.name)
+
+  def get_identifier_system(self) -> str:
+    return 'ROW_ID in https://mimic.mit.edu/docs/iii/tables/chartevents/'
 
   def get_unit_string(self) -> str:
     return self.observation_info.VALUEUOM
@@ -70,7 +76,7 @@ class Mimic3Observation(Observation):
     return self.observation_info.VALUENUM
 
   def get_time(self) -> datetime:
-    return pd.Timestamp(self.observation_info.CHARTTIME)
+    return pd.Timestamp(self.observation_info.CHARTTIME).to_pydatetime()
 
 
 
@@ -161,8 +167,8 @@ class Mimic3(PatientDataSource):
         dtype_dict[colname] = np.int32 if colname in parse_int else float
 
     table_path = os.path.join(self.data_dir,f'{table_name}.csv.gz')
-    # if table_name == 'CHARTEVENTS':
-    #   table_path = './CHARTEVENTS_test.csv'
+    if table_name == 'CHARTEVENTS':
+      table_path = './CHARTEVENTS_test.csv'
     # print(dtype_dict)
 
     return pd.read_csv(
@@ -178,12 +184,6 @@ class Mimic3(PatientDataSource):
 
   def get_patient_observations(self, patient : Patient):
     patient_chart_events =\
-      self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == int(patient.get_id())]
+      self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == int(patient.get_identifier_value())]
 
     return (Mimic3Observation(data) for _,data in patient_chart_events.iterrows())
-
-  def get_patient_system(self):
-    return 'https://mimic.mit.edu/docs/iii/tables/patients/#subject_id'
-
-  def get_observation_system(self):
-    return 'ROW_ID in https://mimic.mit.edu/docs/iii/tables/chartevents/'
