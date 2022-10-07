@@ -20,7 +20,7 @@ class Patient(ABC):
 		return Gender.unknown
 
 	def get_identifier_value(self) -> str:
-		"""Returns a id value for internal FHIR use. The tuple(identifier_system, indentifier_value) must be unique."""
+		"""Returns a id value for external use."""
 		return None
 
 	@abstractmethod
@@ -29,7 +29,7 @@ class Patient(ABC):
 		return datetime.min
 
 	def get_identifier_system(self) -> str:
-		"""Returns the namespace for unique identifier values. The tuple(identifier_system, indentifier_value) must be unique."""
+		"""Returns the namespace for unique identifier values."""
 		return None
 
 	def generate_name(self, gender : Gender) -> tuple[str, str]:
@@ -85,7 +85,7 @@ class Observation(ABC):
 	}
 
 	def get_identifier_value(self) -> str:
-		"""Returns a id value for internal FHIR use. The tuple(identifier_system, indentifier_value) must be unique."""
+		"""Returns a id value for external use."""
 		return None
 
 	@abstractmethod
@@ -94,7 +94,7 @@ class Observation(ABC):
 		pass
 
 	def get_identifier_system(self) -> str:
-		"""Returns the namespace for unique identifier values. The tuple(identifier_system, indentifier_value) must be unique."""
+		"""Returns the namespace for identifier values."""
 		return None
 	
 	def get_unit_string(self) -> str:	
