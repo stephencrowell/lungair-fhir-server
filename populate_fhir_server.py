@@ -18,8 +18,6 @@ parser.add_argument('--fhir_server', type=str, help='FHIR server', required=True
 
 args = parser.parse_args()
 
-
-fhir_server_url = args.fhir_server
 data_type = args.data_type
 
 smart = client.FHIRClient(settings={
