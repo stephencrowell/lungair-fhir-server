@@ -15,25 +15,22 @@ class Patient(ABC):
 		other = 2
 		unknown = 3
 
-	@abstractmethod
 	def get_gender(self) -> Gender:
 		"""Returns the patient's gender. Default implementation return Gender.unkown"""		
 		return Gender.unknown
 
-	@abstractmethod
 	def get_identifier_value(self) -> str:
 		"""Returns a id value for internal FHIR use. The tuple(identifier_system, indentifier_value) must be unique."""
-		pass
+		return None
 
 	@abstractmethod
-	def get_dob(self) -> str:
+	def get_dob(self) -> datetime:
 		"""Returns the patient's date of birth."""
-		pass
+		return datetime.min
 
-	@abstractmethod
 	def get_identifier_system(self) -> str:
 		"""Returns the namespace for unique identifier values. The tuple(identifier_system, indentifier_value) must be unique."""
-		pass
+		return None
 
 	def generate_name(self, gender : Gender) -> tuple[str, str]:
 		"""Generate a first and last name based on gender."""
@@ -87,20 +84,18 @@ class Observation(ABC):
 	  ObservationType.sao2 : 'Sa02',
 	}
 
-	@abstractmethod
 	def get_identifier_value(self) -> str:
 		"""Returns a id value for internal FHIR use. The tuple(identifier_system, indentifier_value) must be unique."""
-		pass
+		return None
 
 	@abstractmethod
 	def get_observation_type(self) -> ObservationType:
 		"""Returns the observation's ObservationType. Used internally for returning other Observation attribues"""
 		pass
 
-	@abstractmethod
 	def get_identifier_system(self) -> str:
 		"""Returns the namespace for unique identifier values. The tuple(identifier_system, indentifier_value) must be unique."""
-		pass
+		return None
 	
 	def get_unit_string(self) -> str:	
 		"""Returns humnan readable units for the Observation's value. Default implementation uses UNIT_CODES"""
@@ -123,10 +118,9 @@ class Observation(ABC):
 		"""Returns the Observation's value."""
 		pass
 
-	@abstractmethod
 	def get_time(self) -> datetime:
 		"""Returns the observation's recorded time."""
-		pass
+		return datetime.min
 
 class PatientDataSource(ABC):
 	"""Abstract class for loading patient data into a smart FHIR server"""
@@ -146,17 +140,31 @@ class PatientDataSource(ABC):
 		gender = patient.get_gender().name
 		family, given = patient.get_name()
 		date = FHIRDate(patient.get_dob().isoformat())
-		return FHIR_Patient({
+
+		fhir_patient_args = {
 		  'gender' : gender,
-		  'identifier' : [
-		    {
-		      'system' : patient.get_identifier_system(),
-		      'value' : patient.get_identifier_value(),
-		    }
-		  ],
 		  'birthDate' : date.isostring,
 		  'name' : [{'family':family,'given':[given]}],
-		})
+		}
+
+		identifier_system = patient.get_identifier_system()
+		identifier_value = patient.get_identifier_value()
+
+		if (identifier_system is not None and identifier_value is not None):
+			fhir_patient_args['identifier'] = [{
+				'system': identifier_system,
+				'value': identifier_value
+			}]
+		elif (identifier_system is not None):
+			fhir_patient_args['identifier'] = [{
+				'system': identifier_system
+			}]
+		elif (identifier_value is not None):
+			fhir_patient_args['identifier'] = [{
+				'value': identifier_value
+			}]
+
+		return FHIR_Patient(fhir_patient_args)
 
 	def create_observation(self, observation : Observation, patient_id : str) -> FHIR_Observation : 
 		"""Create a smart FHIR_Observation object. patient_id is an ID value of a Patient item currently on the FHIR server"""
@@ -168,7 +176,8 @@ class PatientDataSource(ABC):
 		display_string = observation.get_display_string()
 		system = observation.get_identifier_system()
 		date = FHIRDate(observation.get_time().isoformat())
-		return FHIR_Observation({
+
+		fhir_observation_args = {
 		  'code' : {
 		    'coding' : [
 		      {'code': loinc, 'display': display_string, 'system': 'http://loinc.org'}
@@ -182,11 +191,24 @@ class PatientDataSource(ABC):
 		    'unit': unit_string,
 		    'value': value
 		  },
-		  'identifier' : [
-		    {
-		      'system' : system,
-		      'value' : unique_id,
-		    }
-		  ],
 		  'effectiveDateTime': date.isostring,
-		})
+		}
+
+		identifier_system = observation.get_identifier_system()
+		identifier_value = observation.get_identifier_value()
+
+		if (identifier_system is not None and identifier_value is not None):
+			fhir_observation_args['identifier'] = [{
+				'system': identifier_system,
+				'value': identifier_value
+			}]
+		elif (identifier_system is not None):
+			fhir_observation_args['identifier'] = [{
+				'system': identifier_system
+			}]
+		elif (identifier_value is not None):
+			fhir_observation_args['identifier'] = [{
+				'value': identifier_value
+			}]
+
+		return FHIR_Observation(fhir_observation_args)
