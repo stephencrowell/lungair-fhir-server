@@ -10,82 +10,82 @@ from fhirclient.models.fhirdate import FHIRDate
 
 class Patient(ABC):
 	class Gender(Enum):
-		male = 0
-		female = 1
-		other = 2
-		unknown = 3
+		MALE = 0
+		FEMALE = 1
+		OTHER = 2
+		UNKNOWN = 3
 
 	def get_gender(self) -> Gender:
 		"""Returns the patient's gender. Default implementation return Gender.unkown"""		
-		return Gender.unknown
+		return Patient.Gender.UNKNOWN
 
 	def get_identifier_value(self) -> str:
-		"""Returns a id value for external use."""
+		"""Return a custom identifier for the Patient. This is not the ID that will be used internally by the server.
+		This could be used to link the Patient to its point of origin in the data source, for example."""
 		return None
 
-	@abstractmethod
 	def get_dob(self) -> datetime:
 		"""Returns the patient's date of birth."""
-		return datetime.min
+		return None
 
 	def get_identifier_system(self) -> str:
-		"""Returns the namespace for unique identifier values."""
+		"""Returns a description of the way to interpret the custom identifiers returned by get_identifier_value"""
 		return None
 
 	def generate_name(self, gender : Gender) -> tuple[str, str]:
-		"""Generate a first and last name based on gender."""
-		match gender:
-			case Patient.Gender.male:
-				first_name = names.get_first_name('male')
-			case Patient.Gender.female:
-				first_name = names.get_first_name('female')
-			case default:
-				first_name = names.get_first_name()
+		"""Generate a tupe(last name, first name) based on gender."""
+		if(gender == Patient.Gender.MALE):
+			first_name = names.get_first_name('male')
+		elif(gender == Patient.Gender.FEMALE):
+			first_name = names.get_first_name('female')
+		else:
+			first_name = names.get_first_name()
 
 		return names.get_last_name(), first_name
 
 	def get_name(self) -> tuple[str, str]:
-		"""Returns a a tuple of the last and first name of the patient. Default implementation generates names based on gender"""
+		"""Returns the tuple(last name, first name) for the patient. Default implementation generates names based on gender"""
 		return self.generate_name(self.get_gender())
 
 class Observation(ABC):
 	class ObservationType(Enum):
-		fio2 = 0
-		pip = 1
-		peep = 2
-		hr = 3
-		sao2 = 4
+		FIO2 = 0
+		PIP = 1
+		PEEP = 2
+		HR = 3
+		SAO2 = 4
 
 	# Units used for ObservationType's valus. Codes that follow the spec in https://ucum.org/ucum.html.
 	UNIT_CODES = {
-	  ObservationType.fio2 : '',
-	  ObservationType.pip : 'cm[H20]',
-	  ObservationType.peep : 'cm[H20]',
-	  ObservationType.hr : '/min',
-	  ObservationType.sao2 : '%',
+	  ObservationType.FIO2 : '',
+	  ObservationType.PIP : 'cm[H20]',
+	  ObservationType.PEEP : 'cm[H20]',
+	  ObservationType.HR : '/min',
+	  ObservationType.SAO2 : '%',
 	}
 
 	# LOINC codes that I found by using loinc.org/search/ ... and making my best guesses when things were unclear
 	# Not to be fully trusted
 	LOINC_CODES = {
-	  ObservationType.fio2 : '19996-8',
-	  ObservationType.pip : '60951-1',
-	  ObservationType.peep : '20077-4',
-	  ObservationType.hr : '8867-4',
-	  ObservationType.sao2 : '59408-5',
+	  ObservationType.FIO2 : '19996-8',
+	  ObservationType.PIP : '60951-1',
+	  ObservationType.PEEP : '20077-4',
+	  ObservationType.HR : '8867-4',
+	  ObservationType.SAO2 : '59408-5',
 	}
 
 	# Human readable strings for the ObservationTypes currently implemented.
 	DISPLAY_STRINGS = {
-	  ObservationType.fio2 : 'ETT Sx Quality',
-	  ObservationType.pip : 'PIP',
-	  ObservationType.peep : 'PEEP',
-	  ObservationType.hr : 'Heart Rate',
-	  ObservationType.sao2 : 'Sa02',
+	  ObservationType.FIO2 : 'ETT Sx Quality',
+	  ObservationType.PIP : 'PIP',
+	  ObservationType.PEEP : 'PEEP',
+	  ObservationType.HR : 'Heart Rate',
+	  ObservationType.SAO2 : 'Sa02',
 	}
 
 	def get_identifier_value(self) -> str:
-		"""Returns a id value for external use."""
+		"""Return a custom identifier for the Observation. This is not the ID that will be used internally by the server.
+		This could be used to link the Observation to its point of origin in the data source, for example."""
 		return None
 
 	@abstractmethod
@@ -94,7 +94,7 @@ class Observation(ABC):
 		pass
 
 	def get_identifier_system(self) -> str:
-		"""Returns the namespace for identifier values."""
+		"""Returns a description of the way to interpret the custom identifiers returned by get_identifier_value"""
 		return None
 	
 	def get_unit_string(self) -> str:	
@@ -109,9 +109,13 @@ class Observation(ABC):
 		"""Returns a computer processable form for the Observation's value. Default implementation uses the UCUM system."""
 		return self.UNIT_CODES[self.get_observation_type()]
 
-	def get_loinc_code(self) -> str:
-		"""Returns a computer processable form for the ObservationType. Default implementation uses the LOINC_CODES."""
+	def get_observation_code_value(self) -> str:
+		"""Returns a computer processable form for the ObservationType. Default implementation uses the LOINC codes."""
 		return self.LOINC_CODES[self.get_observation_type()]
+
+	def get_observation_code_system(self) -> str:
+		"""Returns the coding system used get_observation_code_value. Default implementation is LOINC codes"""
+		return 'http://loinc.org'
 
 	@abstractmethod
 	def get_value(self) -> str:
@@ -120,7 +124,7 @@ class Observation(ABC):
 
 	def get_time(self) -> datetime:
 		"""Returns the observation's recorded time."""
-		return datetime.min
+		return None
 
 class PatientDataSource(ABC):
 	"""Abstract class for loading patient data into a smart FHIR server"""
@@ -137,15 +141,17 @@ class PatientDataSource(ABC):
 
 	def create_patient(self, patient: Patient) -> FHIR_Patient :
 		"""Create a smart FHIR_Patient object."""
-		gender = patient.get_gender().name
+		gender = patient.get_gender().name.lower()
 		family, given = patient.get_name()
-		date = FHIRDate(patient.get_dob().isoformat())
+		date = patient.get_dob()
 
 		fhir_patient_args = {
 		  'gender' : gender,
-		  'birthDate' : date.isostring,
 		  'name' : [{'family':family,'given':[given]}],
 		}
+
+		if (date is not None):
+			fhir_patient_args['birthDate'] = FHIRDate(date.isoformat()).isostring
 
 		identifier_system = patient.get_identifier_system()
 		identifier_value = patient.get_identifier_value()
@@ -168,19 +174,18 @@ class PatientDataSource(ABC):
 
 	def create_observation(self, observation : Observation, patient_id : str) -> FHIR_Observation : 
 		"""Create a smart FHIR_Observation object. patient_id is an ID value of a Patient item currently on the FHIR server"""
-		unique_id = observation.get_identifier_value()
 		value = observation.get_value()
 		unit_string = observation.get_unit_string()
 		unit_code = observation.get_unit_code()
-		loinc = observation.get_loinc_code()
+		code_value = observation.get_observation_code_value()
+		code_system = observation.get_observation_code_system()
 		display_string = observation.get_display_string()
-		system = observation.get_identifier_system()
-		date = FHIRDate(observation.get_time().isoformat())
+		date = observation.get_time()
 
 		fhir_observation_args = {
 		  'code' : {
 		    'coding' : [
-		      {'code': loinc, 'display': display_string, 'system': 'http://loinc.org'}
+		      {'code': code_value, 'display': display_string, 'system': code_system}
 		    ]
 		  },
 		  'status' :'final',
@@ -191,8 +196,10 @@ class PatientDataSource(ABC):
 		    'unit': unit_string,
 		    'value': value
 		  },
-		  'effectiveDateTime': date.isostring,
 		}
+
+		if (date is not None):
+			fhir_patient_args['effectiveDateTime'] = FHIRDate(date.isoformat()).isostring
 
 		identifier_system = observation.get_identifier_system()
 		identifier_value = observation.get_identifier_value()
