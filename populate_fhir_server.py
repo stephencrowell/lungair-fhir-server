@@ -6,7 +6,7 @@ from fhirclient.models.observation import Observation as FHIR_Observation
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
 from patient_data_source import Patient, Observation
 from mimic3 import Mimic3
-# from RandomData import random_data
+from random_data import RandomData
 
 parser = argparse.ArgumentParser()
 
@@ -19,6 +19,7 @@ parser.add_argument('--fhir_server', type=str, help='FHIR server', required=True
 args = parser.parse_args()
 
 data_type = args.data_type
+fhir_server_url = args.fhir_server
 
 smart = client.FHIRClient(settings={
   'app_id': 'my_web_app',
@@ -33,10 +34,9 @@ except BaseException as e:
   raise
 
 if (data_type == 'random'):
-  exit()
-  # num_of_patients = args.num_of_patients
-  # num_of_observations_per_patient = args.num_of_observations_per_patient
-  # data_generator = RandomData(num_of_patients, num_of_observations_per_patient)
+  num_of_patients = args.num_of_patients
+  num_of_observations_per_patient = args.num_of_observations_per_patient
+  data_generator = RandomData(num_of_patients, num_of_observations_per_patient)
 elif (data_type == 'mimic3'):
   mimic3_dir = args.mimic3_dir
   data_generator = Mimic3(mimic3_dir, './mimic3-schemas/')
@@ -44,10 +44,10 @@ else:
   print(f"Unknown data generation type: {data_type} ")
   exit()
 
-num_chartevents = len(data_generator.NICU_CHARTEVENTS_SUPPORTED)
+# num_chartevents = len(data_generator.NICU_CHARTEVENTS_SUPPORTED)
 num_chartevents_processed = 0
 
-num_patients = len(data_generator.NICU_PATIENTS)
+# num_patients = len(data_generator.NICU_PATIENTS)
 num_patients_processed = 0
 
 for patient in data_generator.get_all_patients():
@@ -67,14 +67,14 @@ for patient in data_generator.get_all_patients():
     observation_resource = data_generator.create_observation(observation, patient_id)
     observations.append(observation_resource)
     num_chartevents_processed += 1
-    if (num_chartevents_processed % 100 == 0):
-      percent_chartevents = 100 * num_chartevents_processed/num_chartevents
-      percent_patients = 100 * num_patients_processed/num_patients
-      print(
-        f'processed {num_patients_processed}/{num_patients} = {percent_patients:.2f}% patients.',
-        f'processed {num_chartevents_processed}/{num_chartevents} = {percent_chartevents:.2f}% chart events',
-        sep=', '
-      )
+    # if (num_chartevents_processed % 100 == 0):
+    #   percent_chartevents = 100 * num_chartevents_processed/num_chartevents
+    #   percent_patients = 100 * num_patients_processed/num_patients
+    #   print(
+    #     f'processed {num_patients_processed}/{num_patients} = {percent_patients:.2f}% patients.',
+    #     f'processed {num_chartevents_processed}/{num_chartevents} = {percent_chartevents:.2f}% chart events',
+    #     sep=', '
+    #   )
 
   if len(observations)>0:
     transaction_bundle = create_transaction_bundle_object(observations)
