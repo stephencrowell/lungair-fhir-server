@@ -9,6 +9,7 @@ from fhirclient.models.observation import Observation as FHIR_Observation
 from fhirclient.models.fhirdate import FHIRDate
 
 class Patient(ABC):
+	"""Abstract class for storing Patient data"""
 	class Gender(Enum):
 		MALE = 0
 		FEMALE = 1
@@ -16,24 +17,26 @@ class Patient(ABC):
 		UNKNOWN = 3
 
 	def get_gender(self) -> Gender:
-		"""Returns the patient's gender. Default implementation return Gender.unkown"""		
+		"""Returns the patient's gender. Default implementation returns Gender.UNKNOWN"""		
 		return Patient.Gender.UNKNOWN
 
 	def get_identifier_value(self) -> str:
 		"""Return a custom identifier for the Patient. This is not the ID that will be used internally by the server.
-		This could be used to link the Patient to its point of origin in the data source, for example."""
+		This could be used to link the Patient to its point of origin in the data source, for example. Implementation
+		is not requried."""
 		return None
 
 	def get_dob(self) -> datetime:
-		"""Returns the patient's date of birth."""
+		"""Returns the patient's date of birth. Implementation is not required"""
 		return None
 
 	def get_identifier_system(self) -> str:
-		"""Returns a description of the way to interpret the custom identifiers returned by get_identifier_value"""
+		"""Returns a description of the way to interpret the custom identifiers returned by get_identifier_value.
+		Implementation is not requried."""
 		return None
 
 	def generate_name(self, gender : Gender) -> tuple[str, str]:
-		"""Generate a tupe(last name, first name) based on gender."""
+		"""Generate a tuple(last name, first name) based on gender."""
 		if(gender == Patient.Gender.MALE):
 			first_name = names.get_first_name('male')
 		elif(gender == Patient.Gender.FEMALE):
@@ -44,10 +47,11 @@ class Patient(ABC):
 		return names.get_last_name(), first_name
 
 	def get_name(self) -> tuple[str, str]:
-		"""Returns the tuple(last name, first name) for the patient. Default implementation generates names based on gender"""
+		"""Returns the tuple(last name, first name) for the patients name. Default implementation generates names based on gender"""
 		return self.generate_name(self.get_gender())
 
 class Observation(ABC):
+	"""Abstract class for storing Observation data"""
 	class ObservationType(Enum):
 		FIO2 = 0
 		PIP = 1
@@ -85,16 +89,18 @@ class Observation(ABC):
 
 	def get_identifier_value(self) -> str:
 		"""Return a custom identifier for the Observation. This is not the ID that will be used internally by the server.
-		This could be used to link the Observation to its point of origin in the data source, for example."""
+		This could be used to link the Observation to its point of origin in the data source, for example. Implementation
+		is not required."""
 		return None
 
 	@abstractmethod
 	def get_observation_type(self) -> ObservationType:
-		"""Returns the observation's ObservationType. Used internally for returning other Observation attribues"""
+		"""Returns the observation's ObservationType. Used internally for returning other Observation attribues."""
 		pass
 
 	def get_identifier_system(self) -> str:
-		"""Returns a description of the way to interpret the custom identifiers returned by get_identifier_value"""
+		"""Returns a description of the way to interpret the custom identifiers returned by get_identifier_value.
+		Implementation is not required."""
 		return None
 	
 	def get_unit_string(self) -> str:	
@@ -114,7 +120,7 @@ class Observation(ABC):
 		return self.LOINC_CODES[self.get_observation_type()]
 
 	def get_observation_code_system(self) -> str:
-		"""Returns the coding system used get_observation_code_value. Default implementation is LOINC codes"""
+		"""Returns the coding system used by get_observation_code_value. Default implementation is LOINC codes"""
 		return 'http://loinc.org'
 
 	@abstractmethod
@@ -123,7 +129,7 @@ class Observation(ABC):
 		pass
 
 	def get_time(self) -> datetime:
-		"""Returns the observation's recorded time."""
+		"""Returns the observation's recorded time. Implementation is not required."""
 		return None
 
 class PatientDataSource(ABC):
@@ -199,7 +205,7 @@ class PatientDataSource(ABC):
 		}
 
 		if (date is not None):
-			fhir_patient_args['effectiveDateTime'] = FHIRDate(date.isoformat()).isostring
+			fhir_observation_args['effectiveDateTime'] = FHIRDate(date.isoformat()).isostring
 
 		identifier_system = observation.get_identifier_system()
 		identifier_value = observation.get_identifier_value()

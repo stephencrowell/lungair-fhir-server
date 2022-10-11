@@ -44,7 +44,7 @@ class Mimic3Patient(Patient):
     self.patient_info = patient_info
 
   def get_gender(self) -> Patient.Gender:  
-    return Patient.Gender[self.FHIR_GENDER_MAPPING[self.patient_info.GENDER]]
+    return Patient.Gender[self.FHIR_GENDER_MAPPING[self.patient_info.GENDER].upper()]
 
   def get_identifier_value(self) -> str:
     return str(self.patient_info.name)
@@ -71,7 +71,7 @@ class Mimic3Observation(Observation):
     return self.observation_info.VALUEUOM
 
   def get_observation_type(self) -> Observation.ObservationType:
-    return Observation.ObservationType[Mimic3.KEY_FROM_ITEM_ID[int(self.observation_info.ITEMID)]]
+    return Observation.ObservationType[Mimic3.KEY_FROM_ITEM_ID[int(self.observation_info.ITEMID)].upper()]
 
   def get_value(self) -> str:
     return self.observation_info.VALUENUM
@@ -168,6 +168,8 @@ class Mimic3(PatientDataSource):
         dtype_dict[colname] = np.int32 if colname in parse_int else float
 
     table_path = os.path.join(self.data_dir,f'{table_name}.csv.gz')
+    if table_name == 'CHARTEVENTS':
+      table_path = './CHARTEVENTS_test.csv'
 
     return pd.read_csv(
       table_path,
