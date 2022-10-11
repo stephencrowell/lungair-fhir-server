@@ -44,12 +44,6 @@ else:
   print(f"Unknown data generation type: {data_type} ")
   exit()
 
-# num_chartevents = len(data_generator.NICU_CHARTEVENTS_SUPPORTED)
-num_chartevents_processed = 0
-
-# num_patients = len(data_generator.NICU_PATIENTS)
-num_patients_processed = 0
-
 for patient in data_generator.get_all_patients():
   patient_resource = data_generator.create_patient(patient)
   try:
@@ -66,15 +60,6 @@ for patient in data_generator.get_all_patients():
   for observation in data_generator.get_patient_observations(patient):
     observation_resource = data_generator.create_observation(observation, patient_id)
     observations.append(observation_resource)
-    num_chartevents_processed += 1
-    # if (num_chartevents_processed % 100 == 0):
-    #   percent_chartevents = 100 * num_chartevents_processed/num_chartevents
-    #   percent_patients = 100 * num_patients_processed/num_patients
-    #   print(
-    #     f'processed {num_patients_processed}/{num_patients} = {percent_patients:.2f}% patients.',
-    #     f'processed {num_chartevents_processed}/{num_chartevents} = {percent_chartevents:.2f}% chart events',
-    #     sep=', '
-    #   )
 
   if len(observations)>0:
     transaction_bundle = create_transaction_bundle_object(observations)
@@ -84,4 +69,3 @@ for patient in data_generator.get_all_patients():
       if hasattr(e, 'response') and hasattr(e.response, 'json') and callable(e.response.json):
         print("Error uploading observation bundle to server, response json:", e.response.json(), file=sys.stderr, sep='\n')
     assert(len(observations) == len(transaction_response['entry'])) # There should be as many responses as resources that went in
-  num_patients_processed += 1
