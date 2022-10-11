@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import os
 import sys
-from datetime import datetime
 from collections.abc import Iterable
 from patient_data_source import PatientDataSource, Patient, Observation
 
@@ -52,8 +51,8 @@ class Mimic3Patient(Patient):
   def get_identifier_system(self) -> str:
     return 'https://mimic.mit.edu/docs/iii/tables/patients/#subject_id'
 
-  def get_dob(self) -> datetime:
-    return pd.Timestamp(self.patient_info.DOB).to_pydatetime()
+  def get_dob(self) -> str:
+    return self.patient_info.DOB.strftime('%Y-%m-%d')
 
 
 class Mimic3Observation(Observation):
@@ -76,8 +75,8 @@ class Mimic3Observation(Observation):
   def get_value(self) -> str:
     return self.observation_info.VALUENUM
 
-  def get_time(self) -> datetime:
-    return pd.Timestamp(self.observation_info.CHARTTIME).to_pydatetime()
+  def get_time(self) -> str:
+    return self.observation_info.CHARTTIME.strftime('%Y-%m-%dT%H:%M:%S-05:00')
 
 
 

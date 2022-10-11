@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 import names
 import warnings
-from datetime import datetime
 from enum import Enum
 from collections.abc import Iterable
 from fhirclient.models.patient import Patient as FHIR_Patient
@@ -26,8 +25,9 @@ class Patient(ABC):
 		is not requried."""
 		return None
 
-	def get_dob(self) -> datetime:
-		"""Returns the patient's date of birth. Implementation is not required"""
+	def get_dob(self) -> str:
+		"""Returns the patient's date of birth. FHIR supported formats are YYYY, YYYY-MM, YYYY-MM-DD, or
+		YYYY-MM-DDThh:mm:ss+zz:zz as described https://build.fhir.org/datatypes.html#dateTime. Implementation is not required"""
 		return None
 
 	def get_identifier_system(self) -> str:
@@ -128,8 +128,9 @@ class Observation(ABC):
 		"""Returns the Observation's value."""
 		pass
 
-	def get_time(self) -> datetime:
-		"""Returns the observation's recorded time. Implementation is not required."""
+	def get_time(self) -> str:
+		"""Returns the observation's recorded time. FHIR supported formats are YYYY, YYYY-MM, YYYY-MM-DD, or
+		YYYY-MM-DDThh:mm:ss+zz:zz as described https://build.fhir.org/datatypes.html#dateTime. Implementation is not required."""
 		return None
 
 class PatientDataSource(ABC):
@@ -157,7 +158,7 @@ class PatientDataSource(ABC):
 		}
 
 		if (date is not None):
-			fhir_patient_args['birthDate'] = FHIRDate(date.isoformat()).isostring
+			fhir_patient_args['birthDate'] = date
 
 		identifier_system = patient.get_identifier_system()
 		identifier_value = patient.get_identifier_value()
@@ -205,7 +206,7 @@ class PatientDataSource(ABC):
 		}
 
 		if (date is not None):
-			fhir_observation_args['effectiveDateTime'] = FHIRDate(date.isoformat()).isostring
+			fhir_observation_args['effectiveDateTime'] = date
 
 		identifier_system = observation.get_identifier_system()
 		identifier_value = observation.get_identifier_value()
