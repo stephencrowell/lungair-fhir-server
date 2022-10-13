@@ -1,6 +1,4 @@
 import random
-import time
-from datetime import datetime
 from collections.abc import Iterable
 from patient_data_source import PatientDataSource, Patient, Observation
     
@@ -13,8 +11,8 @@ class RandomObservation(Observation):
     return random.randint(0, 100)
 
 
-class RandomData(PatientDataSource):
-  """This class handles generating random data for LungAir"""
+class RandomDataSource(PatientDataSource):
+  """This class handles generating random data"""
 
   def __init__(self, num_of_patients, num_of_observations_per_patient):
     self.num_of_patients = num_of_patients
