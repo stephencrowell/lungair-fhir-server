@@ -1,21 +1,36 @@
 import sys
 import argparse
+import json
 from fhirclient import client
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
-from mimic3 import Mimic3
-from random_data import RandomDataSource
+from data_sources import *
 
 parser = argparse.ArgumentParser()
-
-parser.add_argument('--data_type', type=str, help='Type of data generation to use. Either random or mimic3', required=True)
-parser.add_argument('--num_of_patients', type=int, help='Number of patients in random generation', required='random' in sys.argv)
-parser.add_argument('--num_of_observations_per_patient', type=int, help='Number of observations per patient in random generation', required='random' in sys.argv)
-parser.add_argument('--mimic3_dir', type=str, help='MIMIC3 data directory', required='mimic3' in sys.argv)
+parser.add_argument('--data_type', type=str, help='Type of data generation to use', required=True)
 parser.add_argument('--fhir_server', type=str, help='FHIR server', required=True)
 
-args = parser.parse_args()
+with open('args.json') as json_file:
+  json_dict = json.load(json_file)
+  for data_source in json_dict:
+    for data_source_args in json_dict[data_source]['args']:
+      parser.add_argument('--{0}'.format(data_source_args['name']), type=eval(data_source_args['type']),
+        help=data_source_args['help'], required=data_source_args['name'] in sys.argv)
 
-data_type = args.data_type
+
+  args = parser.parse_args()
+  if (args.data_type in json_dict.keys()):
+    klass = globals()[json_dict[args.data_type]['import_name']]
+    arg_string = ''
+    for data_source_args in json_dict[args.data_type]['args']:
+      arg_string = arg_string + 'args.{0}'.format(data_source_args['name'])
+    print(arg_string)
+    data_generator = eval('klass({0})'.format(arg_string))
+  else:
+    print(f"Unknown data generation type: {args.data_type} ")
+    exit()
+  
+
+
 fhir_server_url = args.fhir_server
 
 smart = client.FHIRClient(settings={
@@ -29,17 +44,6 @@ try:
 except BaseException as e:
   print(f"Trouble reading from the given FHIR server-- does the server exist at {fhir_server_url} ?", file=sys.stderr)
   raise
-
-if (data_type == 'random'):
-  num_of_patients = args.num_of_patients
-  num_of_observations_per_patient = args.num_of_observations_per_patient
-  data_generator = RandomDataSource(num_of_patients, num_of_observations_per_patient)
-elif (data_type == 'mimic3'):
-  mimic3_dir = args.mimic3_dir
-  data_generator = Mimic3(mimic3_dir, './mimic3-schemas/')
-else:
-  print(f"Unknown data generation type: {data_type} ")
-  exit()
 
 for patient in data_generator.get_all_patients():
   patient_resource = data_generator.create_patient(patient)
