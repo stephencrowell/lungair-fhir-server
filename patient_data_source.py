@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
 import names
-import warnings
 from enum import Enum
 from collections.abc import Iterable
 from fhirclient.models.patient import Patient as FHIR_Patient
 from fhirclient.models.observation import Observation as FHIR_Observation
-from fhirclient.models.fhirdate import FHIRDate
 
 class Patient(ABC):
 	"""Abstract class for storing Patient data"""
@@ -22,7 +20,7 @@ class Patient(ABC):
 	def get_identifier_value(self) -> str:
 		"""Return a custom identifier for the Patient. This is not the ID that will be used internally by the server.
 		This could be used to link the Patient to its point of origin in the data source, for example. Implementation
-		is not requried."""
+		is not required."""
 		return None
 
 	def get_dob(self) -> str:
@@ -32,7 +30,7 @@ class Patient(ABC):
 
 	def get_identifier_system(self) -> str:
 		"""Returns a description of the way to interpret the custom identifiers returned by get_identifier_value.
-		Implementation is not requried."""
+		Implementation is not required."""
 		return None
 
 	def generate_name(self, gender : Gender) -> tuple[str, str]:
@@ -112,7 +110,7 @@ class Observation(ABC):
 		return self.DISPLAY_STRINGS[self.get_observation_type()]
 
 	def get_unit_code(self) -> str:
-		"""Returns a computer processable form for the Observation's value. Default implementation uses the UCUM system."""
+		"""Returns a computer processable form for the Observation's units in the UCUM system."""
 		return self.UNIT_CODES[self.get_observation_type()]
 
 	def get_observation_code_value(self) -> str:
@@ -152,32 +150,28 @@ class PatientDataSource(ABC):
 		family, given = patient.get_name()
 		date = patient.get_dob()
 
-		fhir_patient_args = {
+		fhir_patient_dict = {
 		  'gender' : gender,
 		  'name' : [{'family':family,'given':[given]}],
 		}
 
 		if (date is not None):
-			fhir_patient_args['birthDate'] = date
+			fhir_patient_dict['birthDate'] = date
 
 		identifier_system = patient.get_identifier_system()
 		identifier_value = patient.get_identifier_value()
 
 		if (identifier_system is not None and identifier_value is not None):
-			fhir_patient_args['identifier'] = [{
+			fhir_patient_dict['identifier'] = [{
 				'system': identifier_system,
 				'value': identifier_value
 			}]
-		elif (identifier_system is not None):
-			fhir_patient_args['identifier'] = [{
-				'system': identifier_system
-			}]
 		elif (identifier_value is not None):
-			fhir_patient_args['identifier'] = [{
+			fhir_patient_dict['identifier'] = [{
 				'value': identifier_value
 			}]
 
-		return FHIR_Patient(fhir_patient_args)
+		return FHIR_Patient(fhir_patient_dict)
 
 	def create_observation(self, observation : Observation, patient_id : str) -> FHIR_Observation : 
 		"""Create a smart FHIR_Observation object. patient_id is an ID value of a Patient item currently on the FHIR server"""
@@ -189,7 +183,7 @@ class PatientDataSource(ABC):
 		display_string = observation.get_display_string()
 		date = observation.get_time()
 
-		fhir_observation_args = {
+		fhir_observation_dict = {
 		  'code' : {
 		    'coding' : [
 		      {'code': code_value, 'display': display_string, 'system': code_system}
@@ -206,23 +200,19 @@ class PatientDataSource(ABC):
 		}
 
 		if (date is not None):
-			fhir_observation_args['effectiveDateTime'] = date
+			fhir_observation_dict['effectiveDateTime'] = date
 
 		identifier_system = observation.get_identifier_system()
 		identifier_value = observation.get_identifier_value()
 
 		if (identifier_system is not None and identifier_value is not None):
-			fhir_observation_args['identifier'] = [{
+			fhir_observation_dict['identifier'] = [{
 				'system': identifier_system,
 				'value': identifier_value
 			}]
-		elif (identifier_system is not None):
-			fhir_observation_args['identifier'] = [{
-				'system': identifier_system
-			}]
 		elif (identifier_value is not None):
-			fhir_observation_args['identifier'] = [{
+			fhir_observation_dict['identifier'] = [{
 				'value': identifier_value
 			}]
 
-		return FHIR_Observation(fhir_observation_args)
+		return FHIR_Observation(fhir_observation_dict)
