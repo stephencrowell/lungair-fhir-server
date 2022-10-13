@@ -1,12 +1,9 @@
 import sys
 import argparse
 from fhirclient import client
-from fhirclient.models.patient import Patient as FHIR_Patient
-from fhirclient.models.observation import Observation as FHIR_Observation
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
-from patient_data_source import Patient, Observation
 from mimic3 import Mimic3
-from random_data import RandomData
+from random_data import RandomDataSource
 
 parser = argparse.ArgumentParser()
 
@@ -36,7 +33,7 @@ except BaseException as e:
 if (data_type == 'random'):
   num_of_patients = args.num_of_patients
   num_of_observations_per_patient = args.num_of_observations_per_patient
-  data_generator = RandomData(num_of_patients, num_of_observations_per_patient)
+  data_generator = RandomDataSource(num_of_patients, num_of_observations_per_patient)
 elif (data_type == 'mimic3'):
   mimic3_dir = args.mimic3_dir
   data_generator = Mimic3(mimic3_dir, './mimic3-schemas/')
