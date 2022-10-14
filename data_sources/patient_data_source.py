@@ -51,7 +51,7 @@ class Patient(ABC):
 
 class Observation(ABC):
 	"""Abstract class for storing Observation data"""
-	
+
 	with open('observation_types.json') as json_file: # Import observation types
   		observation_types = json.load(json_file)
 
