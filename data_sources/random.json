@@ -1,0 +1,9 @@
+{
+	"args":
+	{
+		"num_of_patients": 10,
+		"num_of_observations_per_patient": 50
+	},
+	"class_name": "RandomDataSource",
+	"module_name": "random_data"
+}
