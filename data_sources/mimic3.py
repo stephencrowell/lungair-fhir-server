@@ -96,12 +96,12 @@ class Mimic3(PatientDataSource):
   # Inverse of the ITEM_IDS mapping
   KEY_FROM_ITEM_ID = {v:k for k,v in ITEM_IDS.items()}
 
-  def __init__(self, mimic3_data_dir):
+  def __init__(self, mimic3_data_dir, mimic3_schemas_dir):
     """
     Given the path to the mimic3 dataset and the path to the schema text files,
     load into memory the tables that we care about.
     """
-    mimic3_schemas_dir = './mimic3-schemas/'
+
     if not os.path.isdir(mimic3_data_dir):
       raise FileNotFoundError(f"Please provide a valid directory for the MIMIC-III data directory; received: {mimic3_data_dir}")
     if not os.path.isdir(mimic3_schemas_dir):
