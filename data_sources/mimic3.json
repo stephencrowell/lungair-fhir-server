@@ -1,0 +1,9 @@
+{
+	"args":
+	{
+		"mimic3_data_dir": "../../Downloads/MIMIC-III/MIMIC-III-v1.4/",
+		"mimic3_schemas_dir": "./mimic3-schemas/"
+	},
+	"class_name": "Mimic3",
+	"module_name": "mimic3"
+}

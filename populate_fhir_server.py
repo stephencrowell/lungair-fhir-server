@@ -1,21 +1,21 @@
 import sys
 import argparse
+import json
 from fhirclient import client
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
-from mimic3 import Mimic3
-from random_data import RandomDataSource
 
 parser = argparse.ArgumentParser()
-
-parser.add_argument('--data_type', type=str, help='Type of data generation to use. Either random or mimic3', required=True)
-parser.add_argument('--num_of_patients', type=int, help='Number of patients in random generation', required='random' in sys.argv)
-parser.add_argument('--num_of_observations_per_patient', type=int, help='Number of observations per patient in random generation', required='random' in sys.argv)
-parser.add_argument('--mimic3_dir', type=str, help='MIMIC3 data directory', required='mimic3' in sys.argv)
+parser.add_argument('--json_file', type=str, help='JSON file for data generation to use', required=True)
 parser.add_argument('--fhir_server', type=str, help='FHIR server', required=True)
 
 args = parser.parse_args()
 
-data_type = args.data_type
+with open(args.json_file) as json_file: # Import data source and create instance of data source
+  data_source_dict = json.load(json_file)
+  exec('from data_sources.{0} import {1}'.format(data_source_dict['module_name'], data_source_dict['class_name']))
+  klass = globals()[data_source_dict['class_name']]
+  data_generator = eval('klass(**data_source_dict[\'args\'])')
+
 fhir_server_url = args.fhir_server
 
 smart = client.FHIRClient(settings={
@@ -29,17 +29,6 @@ try:
 except BaseException as e:
   print(f"Trouble reading from the given FHIR server-- does the server exist at {fhir_server_url} ?", file=sys.stderr)
   raise
-
-if (data_type == 'random'):
-  num_of_patients = args.num_of_patients
-  num_of_observations_per_patient = args.num_of_observations_per_patient
-  data_generator = RandomDataSource(num_of_patients, num_of_observations_per_patient)
-elif (data_type == 'mimic3'):
-  mimic3_dir = args.mimic3_dir
-  data_generator = Mimic3(mimic3_dir, './mimic3-schemas/')
-else:
-  print(f"Unknown data generation type: {data_type} ")
-  exit()
 
 for patient in data_generator.get_all_patients():
   patient_resource = data_generator.create_patient(patient)
