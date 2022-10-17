@@ -3,7 +3,6 @@ import argparse
 import json
 from fhirclient import client
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
-# from data_sources import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--json_file', type=str, help='JSON file for data generation to use', required=True)
