@@ -65,7 +65,7 @@ class Observation(ABC):
 
 	@abstractmethod
 	def get_observation_type(self) -> str:
-		"""Returns the observation's type. Used internally for returning other Observation attribues.
+		"""Returns the observation's type. Used internally for returning other Observation attribues."""
 		pass
 
 	def get_identifier_system(self) -> str:
