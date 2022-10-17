@@ -49,11 +49,13 @@ class Patient(ABC):
 		"""Returns the tuple(last name, first name) for the patients name. Default implementation generates names based on gender"""
 		return self.generate_name(self.get_gender())
 
+with open('observation_types.json') as json_file: # Import observation types
+	_observation_types = json.load(json_file) 
+
 class Observation(ABC):
 	"""Abstract class for storing Observation data"""
 
-	with open('observation_types.json') as json_file: # Import observation types
-  		observation_types = json.load(json_file)
+	observation_types = _observation_types
 
 	def get_identifier_value(self) -> str:
 		"""Return a custom identifier for the Observation. This is not the ID that will be used internally by the server.
