@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import names
 from enum import Enum
+import json
 from collections.abc import Iterable
 from fhirclient.models.patient import Patient as FHIR_Patient
 from fhirclient.models.observation import Observation as FHIR_Observation
@@ -48,42 +49,13 @@ class Patient(ABC):
 		"""Returns the tuple(last name, first name) for the patients name. Default implementation generates names based on gender"""
 		return self.generate_name(self.get_gender())
 
+with open('observation_types.json') as json_file: # Import observation types
+	_observation_types = json.load(json_file) 
+
 class Observation(ABC):
 	"""Abstract class for storing Observation data"""
-	class ObservationType(Enum):
-		FIO2 = 0
-		PIP = 1
-		PEEP = 2
-		HR = 3
-		SAO2 = 4
 
-	# Units used for ObservationType's valus. Codes that follow the spec in https://ucum.org/ucum.html.
-	UNIT_CODES = {
-	  ObservationType.FIO2 : '',
-	  ObservationType.PIP : 'cm[H20]',
-	  ObservationType.PEEP : 'cm[H20]',
-	  ObservationType.HR : '/min',
-	  ObservationType.SAO2 : '%',
-	}
-
-	# LOINC codes that I found by using loinc.org/search/ ... and making my best guesses when things were unclear
-	# Not to be fully trusted
-	LOINC_CODES = {
-	  ObservationType.FIO2 : '19996-8',
-	  ObservationType.PIP : '60951-1',
-	  ObservationType.PEEP : '20077-4',
-	  ObservationType.HR : '8867-4',
-	  ObservationType.SAO2 : '59408-5',
-	}
-
-	# Human readable strings for the ObservationTypes currently implemented.
-	DISPLAY_STRINGS = {
-	  ObservationType.FIO2 : 'ETT Sx Quality',
-	  ObservationType.PIP : 'PIP',
-	  ObservationType.PEEP : 'PEEP',
-	  ObservationType.HR : 'Heart Rate',
-	  ObservationType.SAO2 : 'Sa02',
-	}
+	observation_types = _observation_types
 
 	def get_identifier_value(self) -> str:
 		"""Return a custom identifier for the Observation. This is not the ID that will be used internally by the server.
@@ -92,8 +64,8 @@ class Observation(ABC):
 		return None
 
 	@abstractmethod
-	def get_observation_type(self) -> ObservationType:
-		"""Returns the observation's ObservationType. Used internally for returning other Observation attribues."""
+	def get_observation_type(self) -> str:
+		"""Returns the observation's type. Used internally for returning other Observation attribues."""
 		pass
 
 	def get_identifier_system(self) -> str:
@@ -107,15 +79,15 @@ class Observation(ABC):
 
 	def get_display_string(self) -> str:
 		"""Returns a human readable description of the ObservationType."""
-		return self.DISPLAY_STRINGS[self.get_observation_type()]
+		return self.observation_types[self.get_observation_type()]['display_string']
 
 	def get_unit_code(self) -> str:
 		"""Returns a computer processable form for the Observation's units in the UCUM system."""
-		return self.UNIT_CODES[self.get_observation_type()]
+		return self.observation_types[self.get_observation_type()]['unit_code']
 
 	def get_observation_code_value(self) -> str:
 		"""Returns a computer processable form for the ObservationType. Default implementation uses the LOINC codes."""
-		return self.LOINC_CODES[self.get_observation_type()]
+		return self.observation_types[self.get_observation_type()]['loinc_code']
 
 	def get_observation_code_system(self) -> str:
 		"""Returns the coding system used by get_observation_code_value. Default implementation is LOINC codes"""

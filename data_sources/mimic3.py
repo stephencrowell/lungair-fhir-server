@@ -69,8 +69,8 @@ class Mimic3Observation(Observation):
   def get_unit_string(self) -> str:
     return self.observation_info.VALUEUOM
 
-  def get_observation_type(self) -> Observation.ObservationType:
-    return Observation.ObservationType[Mimic3.KEY_FROM_ITEM_ID[int(self.observation_info.ITEMID)].upper()]
+  def get_observation_type(self) -> str:
+    return Mimic3.KEY_FROM_ITEM_ID[int(self.observation_info.ITEMID)].upper()
 
   def get_value(self) -> str:
     return self.observation_info.VALUENUM
