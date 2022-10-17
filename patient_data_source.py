@@ -51,44 +51,9 @@ class Patient(ABC):
 
 class Observation(ABC):
 	"""Abstract class for storing Observation data"""
+	
 	with open('observation_types.json') as json_file: # Import observation types
   		observation_types = json.load(json_file)
-
-
-	# class ObservationType(Enum):
-	# 	FIO2 = 0
-	# 	PIP = 1
-	# 	PEEP = 2
-	# 	HR = 3
-	# 	SAO2 = 4
-
-	# # Units used for ObservationType's valus. Codes that follow the spec in https://ucum.org/ucum.html.
-	# UNIT_CODES = {
-	#   ObservationType.FIO2 : '',
-	#   ObservationType.PIP : 'cm[H20]',
-	#   ObservationType.PEEP : 'cm[H20]',
-	#   ObservationType.HR : '/min',
-	#   ObservationType.SAO2 : '%',
-	# }
-
-	# # LOINC codes that I found by using loinc.org/search/ ... and making my best guesses when things were unclear
-	# # Not to be fully trusted
-	# LOINC_CODES = {
-	#   ObservationType.FIO2 : '19996-8',
-	#   ObservationType.PIP : '60951-1',
-	#   ObservationType.PEEP : '20077-4',
-	#   ObservationType.HR : '8867-4',
-	#   ObservationType.SAO2 : '59408-5',
-	# }
-
-	# # Human readable strings for the ObservationTypes currently implemented.
-	# DISPLAY_STRINGS = {
-	#   ObservationType.FIO2 : 'ETT Sx Quality',
-	#   ObservationType.PIP : 'PIP',
-	#   ObservationType.PEEP : 'PEEP',
-	#   ObservationType.HR : 'Heart Rate',
-	#   ObservationType.SAO2 : 'Sa02',
-	# }
 
 	def get_identifier_value(self) -> str:
 		"""Return a custom identifier for the Observation. This is not the ID that will be used internally by the server.
