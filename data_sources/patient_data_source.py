@@ -64,7 +64,6 @@ class Observation(ABC):
 	@abstractmethod
 	def get_observation_type(self) -> str:
 		"""Returns the observation's type. Used internally for returning other Observation attribues.
-		Must be FIO2, PIP, PEEP, HR, SAO2 or a type you have added"""
 		pass
 
 	def get_identifier_system(self) -> str:
