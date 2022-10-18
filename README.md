@@ -47,7 +47,7 @@ data is and where the MIMIC-III schema is
         "mimic3_schemas_dir": "path/to/mimic3/schema/dir"
     }
     ```
-3. Run populate `populate_fhir_server.py`
+3. Run `populate_fhir_server.py`
     ```sh
     python populate_fhir_server.py --json_file ./data_sources/mimic3.json
     	--fhir_server http://localhost:3000/hapi-fhir-jpaserver/fhir/    
@@ -62,7 +62,7 @@ on how much data to generate
         "num_of_observations_per_patient": 50
     }
     ```
-2. Run populate `populate_fhir_server.py`
+2. Run `populate_fhir_server.py`
     ```sh
     python populate_fhir_server.py --json_file ./data_sources/random.json
     	--fhir_server http://localhost:3000/hapi-fhir-jpaserver/fhir/    
