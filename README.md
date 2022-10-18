@@ -12,7 +12,7 @@ and Observations from a user defined data source. Currently,
 
 ## Initial Setup
 1. Install [Docker](https://store.docker.com/search?type=edition&offering=community) (if not already installed)
-2. Install [Git](https://git-scm.com/downloads) (if not already installed).
+2. Install [Git](https://git-scm.com/downloads) (if not already installed)
 3. Clone this project
     ```sh
     git clone git@github.com:KitwareMedical/lungair-fhir-server.git
@@ -29,18 +29,17 @@ With the initial setup finished, you have a few ways to use
 `lungair-fhir-server`.
 The project is designed for use for three different levels of users:
 1. Users who want to generate a FHIR server using the `MIMIC-III` method
-or the random method.
-2. Users who have their own set of data they want to create a FHIR server for.
-3. Users who have additional Observation types they want to use.
+or the random method
+2. Users who have their own set of data they want to create a FHIR server for
+3. Users who have additional Observation types they want to use
 
 The sections below describe how to use `lungair-fhir-server` for each type of user.
-
 
 ### MIMIC-III and Random Generation
 #### MIMIC-III
 1. Get access to and download [MIMIC-III](https://physionet.org/content/mimiciii/1.4/)
 2. Change the `args` in `data_sources/MIMIC-III.json` to where the MIMIC-III
-data is and where the MIMIC-III schema is.
+data is and where the MIMIC-III schema is
     ```json
     "args":
     {
@@ -75,16 +74,16 @@ The following steps create a minimal working data source for
 1. Create a new python file in `data_sources` for your new data source
 2. Inside the new python file, create two implementations of `Observation`
 and `PatientDataSource` from `patient_data_source.py`
-3. Implement `__init__` for your `PatientDataSouce` implementation.
-This method should handle importing your data source into python.
+3. Implement `__init__` for your `PatientDataSouce` implementation
+This method should handle importing your data source into python
 4. Implement `create_patient` and `get_patient_observations` for
 your `PatientDataSource` implementation. Read the doc strings in
-`patient_data_source.py` for more information.
+`patient_data_source.py` for more information
 5. Implement `get_observation_type` and `get_value` for your
 `Observation` implementation. Read the doc strings in
-`patient_data_source.py` for more information.
+`patient_data_source.py` for more information
 6. Create a new JSON file for your new data source. It should follow
-the format below.
+the format below
     ```json
     {
         "args":
