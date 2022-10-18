@@ -90,8 +90,7 @@ the format below.
         "args":
         {
             "arg1": "arg1_value",
-            "arg2": "arg2_value",
-            ...
+            "arg2": "arg2_value"
         },
         "class_name": "NewPatientDataSource",
         "module_name": "new_patient_data_source"
