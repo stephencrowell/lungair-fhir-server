@@ -28,6 +28,11 @@
 		"display_string": "Sa02",
 		"unit_code": "%",
 		"loinc_code": "59408-5"
+	},
+	"bodyweight":
+	{
+	    "display_string": "body weight",
+	    "unit_code": "kg",
+	    "loinc_code": "29463-7"
 	}
-	
 }
