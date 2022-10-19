@@ -15,16 +15,20 @@ The full list of supported observation types can be found in [observation_types.
     ```sh
     git clone git@github.com:KitwareMedical/lungair-fhir-server.git
     ```
-3. Download the empty [hapi r4 container](https://hub.docker.com/layers/hapi-5/smartonfhir/hapi-5/r4-empty/images/sha256-42d138f85967cbcde9ed4f74d8cd57adf9f0b057e9c45ba6a8e1713d3f9e1cea?context=explore) by the SMART on FHIR team.
+3. Install the required pacakages:
+    ```sh
+    pip install -r requirements.txt
+    ```
+4. Download the empty [hapi r4 container](https://hub.docker.com/layers/hapi-5/smartonfhir/hapi-5/r4-empty/images/sha256-42d138f85967cbcde9ed4f74d8cd57adf9f0b057e9c45ba6a8e1713d3f9e1cea?context=explore) by the SMART on FHIR team.
     ```sh
     docker pull smartonfhir/hapi-5:r4-empty
     ```
-4. Run the docker container.
+5. Run the docker container.
     ```sh
     docker run -dp 3000:8080 smartonfhir/hapi-5:r4-empty
     ```
     The port "3000" may be replaced by your choice of port; just replace appearances of "3000" by your choice in the rest of the instructions.
-5. Verify that the server is working by visiting http://localhost:3000/hapi-fhir-jpaserver/fhir/Patient. This should display some json.
+6. Verify that the server is working by visiting http://localhost:3000/hapi-fhir-jpaserver/fhir/Patient. This should display some json.
 
 
 ## Using lungair-fhir-server
