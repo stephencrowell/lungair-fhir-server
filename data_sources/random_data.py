@@ -4,7 +4,7 @@ from .patient_data_source import PatientDataSource, Patient, Observation
     
 class RandomObservation(Observation):
   def get_observation_type(self) -> str:
-    return random.choice(['FIO2', 'PIP', 'PEEP', 'HR', 'SAO2'])
+    return random.choice(['FIO2', 'PIP', 'PEEP', 'HR', 'SAO2', 'bodyweight'])
 
   def get_value(self) -> str:
     return random.randint(0, 100)
