@@ -128,3 +128,6 @@ your own observation types by simply adding an entry to [observation_types.json]
 - The `unit_code` describes the observation's unit of measure in the format of the [UCUM system](http://unitsofmeasure.org)
 - The `loinc_code` is a [LOINC code](https://en.wikipedia.org/wiki/LOINC) identifying the observation type. You can search for LOINC codes [here](https://loinc.org/search/).
 
+## Limitations
+
+This tool only works with only two out of the [many types of FHIR resources](https://www.hl7.org/fhir/resourcelist.html): Patients and Observations. Extending this tool to work with other types of FHIR resources requires a more involved development effort, as well as getting friendly with the FHIR documentation.
