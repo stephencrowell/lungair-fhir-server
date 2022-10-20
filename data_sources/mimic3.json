@@ -5,5 +5,5 @@
 		"mimic3_schemas_dir": "./mimic3-schemas/"
 	},
 	"class_name": "Mimic3",
-	"module_name": "mimic3"
+	"module_name": "data_sources.mimic3"
 }
