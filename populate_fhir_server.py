@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 with open(args.json_file) as json_file: # Import data source and create instance of data source
   data_source_dict = json.load(json_file)
-  exec('from data_sources.{0} import {1}'.format(data_source_dict['module_name'], data_source_dict['class_name']))
+  exec('from {0} import {1}'.format(data_source_dict['module_name'], data_source_dict['class_name']))
   klass = globals()[data_source_dict['class_name']]
   data_generator = eval('klass(**data_source_dict[\'args\'])')
 

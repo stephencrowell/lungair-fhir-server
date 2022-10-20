@@ -5,5 +5,5 @@
 		"num_of_observations_per_patient": 50
 	},
 	"class_name": "RandomDataSource",
-	"module_name": "random_data"
+	"module_name": "data_sources.random_data"
 }
