@@ -21,7 +21,7 @@ class Patient(ABC):
 	def get_identifier_value(self) -> str:
 		"""Return a custom identifier for the Patient. This is not the ID that will be used internally by the server.
 		This could be used to link the Patient to its point of origin in the data source, for example. Implementation
-		is not required."""
+		is not required, but highly recommend for implementing get_patient_observations"""
 		return None
 
 	def get_dob(self) -> str:
