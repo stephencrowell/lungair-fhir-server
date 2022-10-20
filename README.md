@@ -75,44 +75,7 @@ This approach uses a downloaded [MIMIC-III](https://physionet.org/content/mimici
 To populate the FHIR server with your own data, you will need to write a bit of python.
 The procedure is to subclass the `PatientDataSource`, `Patient`, and `Observation` classes in [data_sources/patient_data_source.py](data_sources/patient_data_source.py), specifying how the patient and observation data should be created.
 
-The following steps create a minimal working data source:
-1. Create a new python file in for your new data source, importing `PatientDataSource`, `Patient`, and `Observation` from [data_sources/patient_data_source.py](data_sources/patient_data_source.py).
-2. Inside the new python file, create two implementations of `Observation`
-and `PatientDataSource` from `patient_data_source.py`.
-3. Implement `__init__` for your `PatientDataSouce` implementation
-This method should handle importing your data source into python.
-4. Implement `create_patient` and `get_patient_observations` for
-your `PatientDataSource` implementation. Read the doc strings in
-`patient_data_source.py` for more information.
-5. Implement `get_observation_type` and `get_value` for your
-`Observation` implementation. Read the doc strings in
-`patient_data_source.py` for more information.
-6. Create a new JSON file for your new data source. It should follow
-the format below
-    ```json
-    {
-        "args":
-        {
-            "arg1": "arg1_value",
-            "arg2": "arg2_value"
-        },
-        "class_name": "NewPatientDataSource",
-        "module_name": "new_patient_data_source"
-    }
-    ```
-Note that `class_name` is the name of the
-`PatientDataSource` implementation and `module_name` is the
-name of the python file without the file extension.
-
-The docstrings in `patient_data_source.py` should help guide your implementation of the subclasses. If more information is needed on the precise meanings of things, check the FHIR [documentation](https://www.hl7.org/fhir/observation.html).
-
-While this is a viable way to create a new data source, there is
-more customization available. All methods with a default
-implementation in `Patient` and `Observation` can be changed
-in your implementation of `Patient` and `Observation`. This is
-not required for `populate_fhir_server.py` to work; however,
-it does allow for the data on the FHIR server to represent the
-source more accurately.
+A more indepth explanation with examples can be found [here](example/example.md).
 
 #### Adding Custom Observation Types
 

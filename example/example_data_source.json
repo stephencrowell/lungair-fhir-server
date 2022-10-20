@@ -1,0 +1,8 @@
+{
+	"args":
+	{
+		"csv_file": "./example.csv",
+	},
+	"class_name": "ExampleDataSource",
+	"module_name": "example_data_source.py"
+}

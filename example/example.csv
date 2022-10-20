@@ -1,0 +1,10 @@
+patient_id,patient_name,date,body_weight_kg
+123,June Davis,2022-10-30,80.4
+123,June Davis,2022-12-31,82
+123,June Davis,2023-05-01,81
+456,Lawrence Simons,2022-11-02,68
+456,Lawrence Simons,2023-01-15,66
+789,Steve Ireland,2021-02-04,77.4
+789,Steve Ireland,2021-04-05,78.6
+789,Steve Ireland,2021-04-12,78.8
+789,Steve Ireland,2021-09-07,79
