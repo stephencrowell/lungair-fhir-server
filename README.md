@@ -1,8 +1,8 @@
 # lungair-fhir-server
 
-This repository contains tools for building a prepopulated FHIR R4 server,
+This repository contains tools for building a prepopulated [FHIR](https://www.hl7.org/fhir/overview.html) R4 server,
 intended for the construction of sandbox environments for Electronic Health
-Records (EHR). `lungair-fhir-server` creates a [FHIR](https://www.hl7.org/fhir/overview.html) server inside a
+Records (EHR). `lungair-fhir-server` creates a FHIR server inside a
 docker container that you can interact with. The FHIR server contains Patients
 and Observations from a user defined data source. Currently,
 a handful of observation types are supported such as heart rate and some mechanical ventilation parameters.
@@ -75,7 +75,7 @@ This approach uses a downloaded [MIMIC-III](https://physionet.org/content/mimici
 To populate the FHIR server with your own data, you will need to write a bit of python.
 The procedure is to subclass the `PatientDataSource`, `Patient`, and `Observation` classes in [data_sources/patient_data_source.py](data_sources/patient_data_source.py), specifying how the patient and observation data should be created.
 
-A more in depth explanation with examples can be found [here](example/example.md).
+A more in-depth explanation with examples can be found [here](example/example.md).
 
 #### Adding Custom Observation Types
 
