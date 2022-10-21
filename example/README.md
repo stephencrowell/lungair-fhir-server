@@ -1,11 +1,15 @@
 # Creating a Custom Data Source
 
-In order to help you create a custom data source, we will create an example data source here.
-We will go through each step with directions as well as showing how we created the example files here.
+This tutorial will run through the process of creating a custom data source.
+The complete example is in this directory, and it can be run by
+```sh
+python populate_fhir_server.py --json_file example/example_data_source.json --fhir_server "http://localhost:3000/hapi-fhir-jpaserver/fhir"
+```
+assuming that the [initial setup](../README.md#initial-setup) is complete.
 
 ## Importing Data into Python
 
-We have some [data](example.csv) we wish to load into a FHIR server. The data is shown in the format below:
+Suppose we have some [data](example.csv) that we wish to load into a FHIR server:
 
 | patient_id | patient_name | date | body_weight_kg |
 |---|---|---|---|
@@ -19,31 +23,32 @@ We have some [data](example.csv) we wish to load into a FHIR server. The data is
 | 789 | Steve Ireland | 2021-04-12 | 78.8 |
 | 789 | Steve Ireland | 2021-09-07 | 79 |
 
-The first step is to create a new python file for the `PatientDataSource`, `Patient`, and `Observation` classes.
-We created `example_data_source.py` as follows:
+There are three patients here, and there's only one type of observation: body weight.
+
+The first step is to create a new python file in which we will define subclasses of the `PatientDataSource`, `Patient`, and `Observation` classes.
+We initialized `example_data_source.py` as follows:
 
 ```python
-    from collections.abc import Iterable
-    from .patient_data_source import PatientDataSource, Patient, Observation
-    
-    class ExamplePatient(Patient):
+from .patient_data_source import PatientDataSource, Patient, Observation
 
-    class ExampleObservation(Observation):
+class ExamplePatient(Patient):
+    pass
 
-    class ExampleDataSource(PatientDataSource):
+class ExampleObservation(Observation):
+    pass
 
+class ExampleDataSource(PatientDataSource):
+    pass
 ```
 
 The first method we will implement is the `__init__` method for `ExampleDataSource`. This
-is where we will handle bringing [example.csv](example.csv) into python. The code below
-is reading [example.csv](example.csv) into `self.data`.
+is where we will handle loading the table [example.csv](example.csv). We choose to use pandas.
 
 ```python
+class ExampleDataSource(PatientDataSource):
     def __init__(self, csv_file):
         self.data = pd.read_csv(csv_file)
 ```
-
-You can do more processing of your data here if needed, but for our case we are ready to move onto the next step.
 
 ## Implementing `get_all_patients`
 
@@ -51,29 +56,32 @@ For a minimal implementation of a custom data source, `get_all_patients` is a si
 below shows how to create an Iterable of `ExamplePatient`.
 
 ```python
-    def get_all_patients(self) -> Iterable[Patient]:
+class ExampleDataSource(PatientDataSource):
+
+    ...
+
+    def get_all_patients(self):
         mask1 = self.data['patient_id'].duplicated(keep = 'first') # Get first occurance of patient_id
         mask2 = self.data['patient_id'].duplicated(keep = False) # Mark duplicate patient_ids
         mask = ~mask1 | ~mask2
         return (ExamplePatient(row) for _, row in self.data.iterrows())
 ``` 
 
-There is a small issue here: `ExamplePatient` does not have an `__init__` method. The next part
-of code we need to implement is `ExamplePatient`.
+By writing `ExamplePatient(row)`, we have decided that a patient should be defined one of its rows from the table,
+so we should now implement `ExamplePatient.__init__`.
 
 ## Implementing `ExamplePatient`
 
 The only two methods we need to implement for `ExamplePatient` are `__init__` and `get_identifier_value`.
 
-For `__init__`, we need to store the information passed from `get_all_patients`. The code below shows
-the `__init__` method for `ExamplePatient`.
+For `__init__`, we just need to store the patient information,
+which we've chosen to represent as a row from the table (a pandas series):
 
 ```python
+class ExamplePatient(Patient):
     def __init__(self, patient_info):
         self.patient_info = patient_info
 ```
-
-Once again, more processing can be done here as needed.
 
 For `get_identifier_value`, we need to return a string to identify the patient for `get_patient_observations`.
 We will use the `patient_id` row since the values are unique.
@@ -83,17 +91,24 @@ We will use the `patient_id` row since the values are unique.
         return str(self.patient_info['patient_id'])
 ```
 
+This ID will get stored in the FHIR server database, but it is separate from the IDs used within the FHIR server itself.
+This ID serves to link objects in the FHIR server to their origins in the data table.
+
 For a minimal implementation of `ExamplePatient`, we will not need to implement any other methods. We will discuss
 other methods you can implement later.
 
 ## Implementing `get_patient_observations`
 
-The `get_patient_observations` method is a bit more complex. We need to get each observation for a given
+The `get_patient_observations` method should get each observation for a given
 patient. Using the `get_identifier_value` method we implemented above, the code below shows how to create
 an Iterable of `ExampleObservation`
 
 ```python
-    def get_patient_observations(self, patient : Patient) -> Iterable[Observation]:
+class ExampleDataSource(PatientDataSource):
+
+    ...
+
+    def get_patient_observations(self, patient : Patient):
         return (ExampleObservation(row) for _, row in self.data[self.data['patient_id'] == int(patient.get_indentifier_value())].iterrows())
 ```
 
@@ -101,10 +116,13 @@ Once again, we will need to implement the `__init__` method for `ExampleObservat
 
 ## Implementing `ExampleObservation`
 
-To implement `__init__`, all we need to do is store the `row` variable passed from `get_patient_observations`.
-The code below show how `ExampleObservation` implements `__init__`
+To implement `__init__`, all we need to do is store the `row` variable passed from `get_patient_observations`:
 
 ```python
+class ExampleObservation(Observation):
+
+    ...
+
     def __init__(self, observation_info):
         self.observation_info = observation_info
 ```
@@ -112,28 +130,33 @@ The code below show how `ExampleObservation` implements `__init__`
 The next two methods we need to implement are `get_observation_type` and `get_value`.
 
 `get_observation_type` returns one of the supported [observation_types.json](../observation_types.json).
-For this example, we will only return `bodyweight`.
+For this small example, we only have `bodyweight`.
 
 ```python
-    def get_observation_type(self) -> str:
+    def get_observation_type(self):
         return 'bodyweight'
 ```
 
-`get_value` returns the value associated with the `observation_type`. The code below is how
+`get_value` returns the actual observed value, in this case the patient weights. The code below is how
 `ExampleObservation` implements `get_value`.
 
 ```python
-    def get_value(self) -> str:
+    def get_value(self):
         return self.observation_info['body_weight_kg']
 ```
+
+Note that the "bodyweight" observation type in [observation_types.json](../observation_types.json) was configured to report the units as "kg".
+Since the body weights in our table are already in kg, we are good. If the weights in our table were in, say, lbs, then we would have to do one of the following:
+- Convert from lbs to kg in our `ExampleObservation.get_value` so that we provide values that match the unit label, or
+- Reimplement `Observation.get_unit_code` with our own `ExampleObservation.get_unit_code` that returns the unit code '[lb_av]' from the [UCUM system](https://ucum.org/). This unit code sometimes looks odd, but you can always implement `ExampleObservation.get_unit_string` to return something human readable like 'lbs'.
 
 These are the last methods we are required to implement; however, there is one last file
 we will need to create.
 
-## Create JSON
+## Creating JSON config file
 
 In order for `populate_fhir_server.py` to recognize `ExampleDataSource`, we need to create
-a new JSON file with the proper information. [example.json](example.json) shows the format
+a new JSON config file with the proper information. [example.json](example.json) shows the format
 needed to create a proper JSON file.
 
 Note the directory your implementation is located in will need an empty `__init__.py` inside the directory.
@@ -141,7 +164,7 @@ This will allow your implementation to be seen as a package that can be imported
 
 After following these steps, you will be able to run `populate_fhir_server.py` with your JSON file as an argument.
 
-## Adding Customization
+## Including more data
 
 While the previous steps created a minimal implementation, it is possible to implement more methods.
 This will allow you to have more information stored on the FHIR server. Two pieces of
@@ -151,6 +174,10 @@ For `patient_name`, we can implement `get_name` in `ExamplePatient`. The code be
 possible implementation.
 
 ```python
+class ExamplePatient(Patient):
+
+    ...
+    
     def get_name(self) -> tuple[str, str]:
         split_name = self.patient_info['patient_name'].split(' ')
         return split_name[1], split_name[0]
@@ -162,6 +189,10 @@ For `date`, we can implement `get_time` in `ExampleObservation`. The code below 
 possible implementation.
 
 ```python
+class ExampleObservation(Observation):
+
+    ...
+    
     def get_time(self) -> str:
         return self.observation_info['date']
 ```
