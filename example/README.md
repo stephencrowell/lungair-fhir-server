@@ -59,12 +59,9 @@ below shows how to create an Iterable of `ExamplePatient`.
 class ExampleDataSource(PatientDataSource):
 
     ...
-
     def get_all_patients(self):
-        mask1 = self.data['patient_id'].duplicated(keep = 'first') # Get first occurance of patient_id
-        mask2 = self.data['patient_id'].duplicated(keep = False) # Mark duplicate patient_ids
-        mask = ~mask1 | ~mask2
-        return (ExamplePatient(row) for _, row in self.data.iterrows())
+        unique_patients = self.data.drop_duplicates('patient_id')
+        return (ExamplePatient(row) for _, row in unique_patients.iterrows())
 ``` 
 
 By writing `ExamplePatient(row)`, we have decided that a patient should be defined one of its rows from the table,
@@ -107,9 +104,10 @@ an Iterable of `ExampleObservation`
 class ExampleDataSource(PatientDataSource):
 
     ...
-
-    def get_patient_observations(self, patient : Patient):
-        return (ExampleObservation(row) for _, row in self.data[self.data['patient_id'] == int(patient.get_indentifier_value())].iterrows())
+    def get_patient_observations(self, patient):
+        patient_id = int(patient.get_indentifier_value())
+        observations_for_patient = self.data[self.data['patient_id']==patient_id]
+        return (ExampleObservation(row) for _, row in observations_for_patient.iterrows())
 ```
 
 Once again, we will need to implement the `__init__` method for `ExampleObservation`.
@@ -148,7 +146,7 @@ For this small example, we only have `bodyweight`.
 Note that the "bodyweight" observation type in [observation_types.json](../observation_types.json) was configured to report the units as "kg".
 Since the body weights in our table are already in kg, we are good. If the weights in our table were in, say, lbs, then we would have to do one of the following:
 - Convert from lbs to kg in our `ExampleObservation.get_value` so that we provide values that match the unit label, or
-- Reimplement `Observation.get_unit_code` with our own `ExampleObservation.get_unit_code` that returns the unit code '[lb_av]' from the [UCUM system](https://ucum.org/). This unit code sometimes looks odd, but you can always implement `ExampleObservation.get_unit_string` to return something human readable like 'lbs'.
+- Reimplement `Observation.get_unit_code` with our own `ExampleObservation.get_unit_code` that returns the unit code '[lb_av]' from the [UCUM system](https://ucum.org/). This unit code sometimes looks odd, but we can always implement `ExampleObservation.get_unit_string` to return something human readable like 'lbs'.
 
 These are the last methods we are required to implement; however, there is one last file
 we will need to create.
@@ -156,18 +154,33 @@ we will need to create.
 ## Creating JSON config file
 
 In order for `populate_fhir_server.py` to recognize `ExampleDataSource`, we need to create
-a new JSON config file with the proper information. [example.json](example.json) shows the format
+a new JSON config file with the proper information. The JSON below shows the format
 needed to create a proper JSON file.
 
-Note the directory your implementation is located in will need an empty `__init__.py` inside the directory.
-This will allow your implementation to be seen as a package that can be imported easily.
+```json
+    {
+        "args":
+        {
+            "csv_file": "./example/example.csv"
+        },
+        "class_name": "ExampleDataSource",
+        "module_path": "./example/example_data_source.py",
+        "module_name": "example_data_source"
+    }
+
+```
+
+`args` are the arguements passed into the `PatientDataSource` implementation.
+`class_name` is the name of the `PatientDataSource` implementation.
+`module_path` is the path to the `PatientDataSource` implementation.
+`module_name` is the name of the python file of the `PatientDataSource` implementation.
 
 After following these steps, you will be able to run `populate_fhir_server.py` with your JSON file as an argument.
 
 ## Including more data
 
 While the previous steps created a minimal implementation, it is possible to implement more methods.
-This will allow you to have more information stored on the FHIR server. Two pieces of
+This will allow us to have more information stored on the FHIR server. Two pieces of
 information stored in `example.csv` we did not use are `patient_name` and `date`.
 
 For `patient_name`, we can implement `get_name` in `ExamplePatient`. The code below shows a 

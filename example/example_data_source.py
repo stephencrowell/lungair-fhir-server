@@ -35,10 +35,10 @@ class ExampleDataSource(PatientDataSource):
 
 
   def get_all_patients(self):
-    mask1 = self.data['patient_id'].duplicated(keep = 'first') # Get first occurance of patient_id
-    mask2 = self.data['patient_id'].duplicated(keep = False) # Mark duplicate patient_ids
-    mask = ~mask1 | ~mask2
-    return (ExamplePatient(row) for _, row in self.data[mask].iterrows())
+    unique_patients = self.data.drop_duplicates('patient_id')
+    return (ExamplePatient(row) for _, row in unique_patients.iterrows())
 
   def get_patient_observations(self, patient):
-    return (ExampleObservation(row) for _, row in self.data[self.data['patient_id'] == int(patient.get_indentifier_value())].iterrows())
+    patient_id = int(patient.get_indentifier_value())
+    observations_for_patient = self.data[self.data['patient_id']==patient_id]
+    return (ExampleObservation(row) for _, row in observations_for_patient.iterrows())
