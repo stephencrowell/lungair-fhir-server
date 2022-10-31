@@ -92,7 +92,7 @@ This ID will get stored in the FHIR server database, but it is separate from the
 This ID serves to link objects in the FHIR server to their origins in the data table.
 
 For a minimal implementation of `ExamplePatient`, we will not need to implement any other methods. We will discuss
-other methods you can implement later.
+other methods we can implement later.
 
 ## Implementing `get_patient_observations`
 
@@ -175,7 +175,7 @@ needed to create a proper JSON file.
 `module_path` is the path to the `PatientDataSource` implementation.
 `module_name` is the name of the python file of the `PatientDataSource` implementation.
 
-After following these steps, you will be able to run `populate_fhir_server.py` with your JSON file as an argument.
+After following these steps, we will be able to run `populate_fhir_server.py` with our JSON file as an argument.
 
 ## Including more data
 
