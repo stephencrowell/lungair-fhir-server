@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import sys
 from collections.abc import Iterable
-from .patient_data_source import PatientDataSource, Patient, Observation
+from data_sources.patient_data_source import PatientDataSource, Patient, Observation
 
 dtype_string_mapping = { # Map schema dtype string to pandas dtype
   'int4' : "int32_possibly_nan",
