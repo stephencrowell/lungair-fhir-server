@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import os
 import sys
-from collections.abc import Iterable
 from data_sources.patient_data_source import PatientDataSource, Patient, Observation
 
 dtype_string_mapping = { # Map schema dtype string to pandas dtype
@@ -42,16 +41,16 @@ class Mimic3Patient(Patient):
   def __init__(self, patient_info):
     self.patient_info = patient_info
 
-  def get_gender(self) -> Patient.Gender:  
+  def get_gender(self):  
     return Patient.Gender[self.FHIR_GENDER_MAPPING[self.patient_info.GENDER].upper()]
 
-  def get_identifier_value(self) -> str:
+  def get_identifier_value(self):
     return str(self.patient_info.name)
 
-  def get_identifier_system(self) -> str:
+  def get_identifier_system(self):
     return 'https://mimic.mit.edu/docs/iii/tables/patients/#subject_id'
 
-  def get_dob(self) -> str:
+  def get_dob(self):
     return self.patient_info.DOB.strftime('%Y-%m-%d')
 
 
@@ -60,22 +59,22 @@ class Mimic3Observation(Observation):
   def __init__(self, observation_info):
     self.observation_info = observation_info
 
-  def get_identifier_value(self) -> str:
+  def get_identifier_value(self):
     return str(self.observation_info.name)
 
-  def get_identifier_system(self) -> str:
+  def get_identifier_system(self):
     return 'ROW_ID in https://mimic.mit.edu/docs/iii/tables/chartevents/'
 
-  def get_unit_string(self) -> str:
+  def get_unit_string(self):
     return self.observation_info.VALUEUOM
 
-  def get_observation_type(self) -> str:
+  def get_observation_type(self):
     return Mimic3.KEY_FROM_ITEM_ID[int(self.observation_info.ITEMID)].upper()
 
-  def get_value(self) -> str:
+  def get_value(self):
     return self.observation_info.VALUENUM
 
-  def get_time(self) -> str:
+  def get_time(self):
     return self.observation_info.CHARTTIME.strftime('%Y-%m-%dT%H:%M:%S-05:00')
 
 
@@ -178,10 +177,10 @@ class Mimic3(PatientDataSource):
       parse_dates = date_cols
     )
 
-  def get_all_patients(self) -> Iterable[Patient]:
+  def get_all_patients(self):
     return (Mimic3Patient(data) for _,data in self.NICU_PATIENTS.iterrows())
 
-  def get_patient_observations(self, patient : Patient) -> Iterable[Observation]:
+  def get_patient_observations(self, patient):
     patient_chart_events =\
       self.NICU_CHARTEVENTS_SUPPORTED[self.NICU_CHARTEVENTS_SUPPORTED.SUBJECT_ID == int(patient.get_identifier_value())]
 
