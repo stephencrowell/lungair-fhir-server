@@ -27,7 +27,7 @@ The full list of supported observation types can be found in [observation_types.
     ```sh
     docker run -dp 3000:8080 smartonfhir/hapi-5:r4-empty
     ```
-    The port "3000" may be replaced by our choice of port; just replace appearances of "3000" by our choice in the rest of the instructions.
+    The port "3000" may be replaced by your choice of port; just replace appearances of "3000" by your choice in the rest of the instructions.
 6. Verify that the server is working by visiting http://localhost:3000/hapi-fhir-jpaserver/fhir/Patient. This should display some json.
 
 
