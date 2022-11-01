@@ -3,7 +3,7 @@
 This repository contains tools for building a prepopulated [FHIR](https://www.hl7.org/fhir/overview.html) R4 server,
 intended for the construction of sandbox environments for Electronic Health
 Records (EHR). `lungair-fhir-server` creates a [FHIR](https://www.hl7.org/fhir/overview.html) server inside a
-docker container that we can interact with. The FHIR server contains Patients
+docker container. The FHIR server contains Patients
 and Observations from a user defined data source. Currently,
 a handful of observation types are supported such as heart rate and some mechanical ventilation parameters.
 The full list of supported observation types can be found in [observation_types.json](observation_types.json).
@@ -36,7 +36,7 @@ The full list of supported observation types can be found in [observation_types.
 With the initial setup finished, there are two ways to use
 `lungair-fhir-server`:
 1. Use one of the existing data sources, such as the random data generator used for testing, or the data source that takes NICU data from a downloaded MIMIC-III dataset.
-2. Create our own `PatientDataSource` to populate our own custom patient and observation data into a FHIR server.
+2. Create your own `PatientDataSource` to populate custom patient and observation data into a FHIR server.
 
 ### Random data
 
@@ -54,7 +54,7 @@ The amount of data to generate can be configured in [data_sources/random.json](d
 This approach uses a downloaded [MIMIC-III](https://physionet.org/content/mimiciii/1.4/) dataset to populate a FHIR server with NICU patients and ventilator observations. Note that the MIMIC-III dataset requires credentialed access on PhysioNet.
 
 1. Get access to and download [MIMIC-III](https://physionet.org/content/mimiciii/1.4/).
-2. Configure [data_sources/MIMIC-III.json](data_sources/MIMIC-III.json) to point to the location of our downloaded data and the MIMIC-III schema files:
+2. Configure [data_sources/MIMIC-III.json](data_sources/MIMIC-III.json) to point to the location of your downloaded data and the MIMIC-III schema files:
     ```json
     "args":
     {
@@ -72,16 +72,16 @@ This approach uses a downloaded [MIMIC-III](https://physionet.org/content/mimici
 
 ### Custom data source
 
-To populate the FHIR server with our own data, we will need to write a bit of python.
+To populate the FHIR server with custom data, a bit of Python is needed.
 The procedure is to subclass the `PatientDataSource`, `Patient`, and `Observation` classes in [data_sources/patient_data_source.py](data_sources/patient_data_source.py), specifying how the patient and observation data should be created.
 
 A more in-depth explanation with examples can be found [here](example/example.md).
 
 #### Adding Custom Observation Types
 
-In cases where our data source has additional observation types
+In cases where the custom data source has additional observation types
 not supported in [observation_types.json](observation_types.json), it is possible to add
-our own observation types by simply adding an entry to [observation_types.json](observation_types.json):
+new observation types by simply adding an entry to [observation_types.json](observation_types.json):
 
 ```json
 "ObservationTypeName":
