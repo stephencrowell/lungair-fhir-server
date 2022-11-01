@@ -2,6 +2,7 @@ import sys
 import argparse
 import json
 import importlib.util
+import os
 from fhirclient import client
 from transaction_bundles import create_transaction_bundle_object, post_transaction_bundle
 
@@ -13,9 +14,11 @@ args = parser.parse_args()
 
 with open(args.json_file) as json_file: # Import data source and create instance of data source
   data_source_dict = json.load(json_file)
-  spec = importlib.util.spec_from_file_location(data_source_dict['module_name'], data_source_dict['module_path'])
+  _, tail = os.path.split(data_source_dict['module_path'])
+  module_name = tail.split('.')[0]
+  spec = importlib.util.spec_from_file_location(module_name, data_source_dict['module_path'])
   module = importlib.util.module_from_spec(spec)
-  sys.modules[data_source_dict['module_name']] = module
+  sys.modules[module_name] = module
   spec.loader.exec_module(module)
   klass = getattr(module, data_source_dict['class_name'])
   data_generator = eval('klass(**data_source_dict[\'args\'])')
