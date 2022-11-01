@@ -172,7 +172,6 @@ a new JSON config file that contains the appropriate paths and arguments:
 - `args` are the arguements passed into the `PatientDataSource.__init__` implementation.
 - `class_name` is the name of the `PatientDataSource` subclass.
 - `module_path` is the path to the `PatientDataSource` implementation.
-- `module_name` is the name of the python file of the `PatientDataSource` implementation.
 
 After following these steps, we should be able to run `populate_fhir_server.py` with the JSON config file as an argument.
 
