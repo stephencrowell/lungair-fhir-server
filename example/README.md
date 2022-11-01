@@ -154,8 +154,7 @@ we will need to create.
 ## Creating JSON config file
 
 In order for `populate_fhir_server.py` to recognize `ExampleDataSource`, we need to create
-a new JSON config file with the proper information. The JSON below shows the format
-needed to create a proper JSON file.
+a new JSON config file that contains the appropriate paths and arguments:
 
 ```json
     {
@@ -170,18 +169,18 @@ needed to create a proper JSON file.
 
 ```
 
-`args` are the arguements passed into the `PatientDataSource` implementation.
-`class_name` is the name of the `PatientDataSource` implementation.
-`module_path` is the path to the `PatientDataSource` implementation.
-`module_name` is the name of the python file of the `PatientDataSource` implementation.
+- `args` are the arguements passed into the `PatientDataSource.__init__` implementation.
+- `class_name` is the name of the `PatientDataSource` subclass.
+- `module_path` is the path to the `PatientDataSource` implementation.
+- `module_name` is the name of the python file of the `PatientDataSource` implementation.
 
-After following these steps, we will be able to run `populate_fhir_server.py` with our JSON file as an argument.
+After following these steps, we should be able to run `populate_fhir_server.py` with the JSON config file as an argument.
 
 ## Including more data
 
-While the previous steps created a minimal implementation, it is possible to implement more methods.
-This will allow us to have more information stored on the FHIR server. Two pieces of
-information stored in `example.csv` we did not use are `patient_name` and `date`.
+While the previous steps created a minimal implementation, it is possible to implement more methods
+to store more information on the FHIR server. Two pieces of
+information stored in `example.csv` that we did not use are `patient_name` and `date`.
 
 For `patient_name`, we can implement `get_name` in `ExamplePatient`. The code below shows a 
 possible implementation.
@@ -196,7 +195,9 @@ class ExamplePatient(Patient):
         return split_name[1], split_name[0]
 ```
 
-Note the last name goes into the first spot of the tuple.
+Note that the returned tuple is in the order `last_name, first_name`,
+as indicated in the `PatientDataSource.get_name` docstring.
+Details like this can be checked by looking at the docstrings.
 
 For `date`, we can implement `get_time` in `ExampleObservation`. The code below shows a
 possible implementation.
@@ -210,4 +211,4 @@ class ExampleObservation(Observation):
         return self.observation_info['date']
 ```
 
-The docstrings in `patient_data_source.py` should help guide your implementation of the subclasses. If more information is needed on the precise meanings of things, check the FHIR [documentation](https://www.hl7.org/fhir/observation.html).
+The docstrings in [patient_data_source.py](../data_sources/patient_data_source.py) should help guide your implementation of the subclasses. If more information is needed on the precise meanings of things, check the FHIR [documentation](https://www.hl7.org/fhir/observation.html).
