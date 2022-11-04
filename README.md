@@ -75,7 +75,7 @@ This approach uses a downloaded [MIMIC-III](https://physionet.org/content/mimici
 To populate the FHIR server with custom data, a bit of Python is needed.
 The procedure is to subclass the `PatientDataSource`, `Patient`, and `Observation` classes in [data_sources/patient_data_source.py](data_sources/patient_data_source.py), specifying how the patient and observation data should be created.
 
-A more in-depth explanation with examples can be found [here](example/example.md).
+A more in-depth explanation with examples can be found [here](example/).
 
 #### Adding Custom Observation Types
 
