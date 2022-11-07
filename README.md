@@ -54,7 +54,7 @@ The amount of data to generate can be configured in [data_sources/random.json](d
 This approach uses a downloaded [MIMIC-III](https://physionet.org/content/mimiciii/1.4/) dataset to populate a FHIR server with NICU patients and ventilator observations. Note that the MIMIC-III dataset requires credentialed access on PhysioNet.
 
 1. Get access to and download [MIMIC-III](https://physionet.org/content/mimiciii/1.4/).
-2. Configure [data_sources/MIMIC-III.json](data_sources/MIMIC-III.json) to point to the location of your downloaded data and the MIMIC-III schema files:
+2. Configure [data_sources/mimic3.json](data_sources/mimic3.json) to point to the location of your downloaded data and the MIMIC-III schema files:
     ```json
     "args":
     {
