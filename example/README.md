@@ -163,8 +163,7 @@ a new JSON config file that contains the appropriate paths and arguments:
             "csv_file": "./example/example.csv"
         },
         "class_name": "ExampleDataSource",
-        "module_path": "./example/example_data_source.py",
-        "module_name": "example_data_source"
+        "module_path": "./example/example_data_source.py"
     }
 
 ```
