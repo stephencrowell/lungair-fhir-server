@@ -166,8 +166,6 @@ class Mimic3(PatientDataSource):
         dtype_dict[colname] = np.int32 if colname in parse_int else float
 
     table_path = os.path.join(self.data_dir,f'{table_name}.csv.gz')
-    if table_name == 'CHARTEVENTS':
-      table_path = './CHARTEVENTS_test.csv'
 
     return pd.read_csv(
       table_path,
