@@ -2,8 +2,12 @@ import random
 from data_sources.patient_data_source import PatientDataSource, Patient, Observation
     
 class RandomObservation(Observation):
+  
+  def __init__(self):
+    self.type = random.choice(['FIO2', 'PIP', 'PEEP', 'HR', 'SAO2', 'bodyweight'])
+
   def get_observation_type(self):
-    return random.choice(['FIO2', 'PIP', 'PEEP', 'HR', 'SAO2', 'bodyweight'])
+    return self.type
 
   def get_value(self):
     return random.randint(0, 100)
