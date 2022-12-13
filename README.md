@@ -1,8 +1,8 @@
-# lungair-fhir-server
+# fhir-sandbox
 
 This repository contains tools for building a prepopulated [FHIR](https://www.hl7.org/fhir/overview.html) R4 server,
 intended for the construction of sandbox environments for Electronic Health
-Records (EHR). `lungair-fhir-server` creates a [FHIR](https://www.hl7.org/fhir/overview.html) server inside a
+Records (EHR). `fhir-sandbox` creates a [FHIR](https://www.hl7.org/fhir/overview.html) server inside a
 docker container. The FHIR server contains Patients
 and Observations from a user defined data source. Currently,
 a handful of observation types are supported such as heart rate and some mechanical ventilation parameters.
@@ -13,7 +13,7 @@ The full list of supported observation types can be found in [observation_types.
 1. Ensure that [Docker](https://docs.docker.com/get-docker/) and [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) are installed.
 2. Clone this project.
     ```sh
-    git clone git@github.com:KitwareMedical/lungair-fhir-server.git
+    git clone git@github.com:KitwareMedical/fhir-sandbox.git
     ```
 3. Install the required pacakages:
     ```sh
@@ -31,10 +31,10 @@ The full list of supported observation types can be found in [observation_types.
 6. Verify that the server is working by visiting http://localhost:3000/hapi-fhir-jpaserver/fhir/Patient. This should display some json.
 
 
-## Using lungair-fhir-server
+## Using fhir-sandbox
 
 With the initial setup finished, there are two ways to use
-`lungair-fhir-server`:
+`fhir-sandbox`:
 1. Use one of the existing data sources, such as the random data generator used for testing, or the data source that takes NICU data from a downloaded MIMIC-III dataset.
 2. Create your own `PatientDataSource` to populate custom patient and observation data into a FHIR server.
 
